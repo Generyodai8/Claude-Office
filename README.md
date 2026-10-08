@@ -146,6 +146,10 @@ The repo includes `.claude/settings.json` which auto-allows curl commands to the
 
 ### Connect Claude Code
 
+**Cara cepat (Windows/macOS/Linux):** `npm run install-hooks` — memasang hook Pre+PostToolUse dan menyalin agen `seo-writer` & `docs-writer` ke `~/.claude/agents/`. Aman dijalankan ulang. Butuh Git Bash (`bash`, `curl`) dan Python 3 di PATH.
+
+Manual:
+
 Add the hook to `~/.claude/settings.json`:
 
 ```json

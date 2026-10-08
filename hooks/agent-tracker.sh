@@ -214,7 +214,16 @@ if hook_event == 'PreToolUse' and tool_name in ('Read', 'Write', 'Edit', 'Bash',
 sys.exit(0)
 PYEOF
 )
-EVENT_JSON=$(printf '%s' "$PAYLOAD" | python3 -c "$PYSCRIPT")
+# Pick a Python that actually works. On Windows "python3" is often a Microsoft
+# Store stub that exits with an error, so try python3, python, then py in turn.
+EVENT_JSON=""
+for PYTHON in python3 python py; do
+    command -v "$PYTHON" >/dev/null 2>&1 || continue
+    if OUT=$(printf '%s' "$PAYLOAD" | "$PYTHON" -c "$PYSCRIPT" 2>/dev/null); then
+        EVENT_JSON="$OUT"
+        break
+    fi
+done
 
 # If Python produced no output, nothing to send
 if [ -z "$EVENT_JSON" ]; then
