@@ -68,6 +68,8 @@ export const AGENT_CONFIGS: Record<string, { color: string; emoji: string; title
   'prompt-engineer':       { color: '#ab47bc', emoji: '✍️', title: 'Prompts' },
   'general-purpose':       { color: '#78909c', emoji: '👤', title: 'General' },
   'Explore':               { color: '#4caf50', emoji: '🔭', title: 'Explorer' },
+  'seo-writer':            { color: '#00bfa5', emoji: '📰', title: 'SEO Writer' },
+  'docs-writer':           { color: '#5c6bc0', emoji: '📚', title: 'Docs Writer' },
   // MCPs
   'github':                { color: '#f0f0f0', emoji: '🐙', title: 'GitHub' },
   'supabase':              { color: '#3ecf8e', emoji: '⚡', title: 'Supabase' },

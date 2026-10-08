@@ -107,6 +107,12 @@ if tool_name in ('Agent', 'Task'):
             'general-purpose':      'general-purpose',
             'general_purpose':      'general-purpose',
             'Explore':              'Explore',
+            'seo-writer':           'seo-writer',
+            'seo_writer':           'seo-writer',
+            'docs-writer':          'docs-writer',
+            'docs_writer':          'docs-writer',
+            'documentation-writer': 'docs-writer',
+            'technical-writer':     'docs-writer',
         }
         role = role_map.get(subagent_type, 'general-purpose')
 
@@ -127,6 +133,8 @@ if tool_name in ('Agent', 'Task'):
             'prompt-engineer':      'Prompts',
             'general-purpose':      'Agent',
             'Explore':              'Explorer',
+            'seo-writer':           'SEO Writer',
+            'docs-writer':          'Docs Writer',
         }
         name = name_map.get(role, 'Agent')
 

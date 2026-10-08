@@ -84,6 +84,8 @@ if msgs:
 import sys
 msg = sys.stdin.read().lower()
 routes = [
+    (['seo','artikel','article','blog','keyword research','backlink','serp','meta description','daily post'], 'seo-writer', 'SEO Writer'),
+    (['docs','documentation','dokumentasi','readme','changelog','docstring','jsdoc'], 'docs-writer', 'Docs Writer'),
     (['bug','error','crash','fix','broken','debug','exception','traceback','stack trace','segfault'], 'debugger', 'Debugger'),
     (['review','pr','merge','approve','lgtm','pull request','code review','diff'], 'code-reviewer', 'Reviewer'),
     (['css','ui','ux','component','design','frontend','style','layout','responsive','tailwind','animation','pixel','theme','dark mode','light mode','color','font','spacing','padding','margin'], 'frontend-developer', 'Frontend'),

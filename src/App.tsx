@@ -229,6 +229,28 @@ const SIM_SCENARIOS = [
       '✅ review complete — approved with 3 suggestions',
     ],
   },
+  {
+    role: 'seo-writer',
+    task: 'Writing today\'s SEO article — keyword research to publish',
+    slackMessages: [
+      '🔎 researching keywords for today\'s article topic',
+      '📰 outlining headings around the main keyword',
+      '✍️ drafting intro and body — 1,200 words so far',
+      '🏷️ writing title tag and meta description',
+      '✅ daily article ready for review',
+    ],
+  },
+  {
+    role: 'docs-writer',
+    task: 'Writing docs — README and API reference',
+    slackMessages: [
+      '📚 reading the source to document public functions',
+      '📝 drafting the README quick start section',
+      '🧩 adding usage examples for each API endpoint',
+      '🔗 cross-linking the changelog and guides',
+      '✅ docs updated and ready to merge',
+    ],
+  },
 ]
 
 // Extra random slack chatter between agents
@@ -237,6 +259,8 @@ const SIM_CHATTER = [
   { sender: 'Frontend', role: 'frontend-developer', msg: 'the new dark mode toggle is looking clean' },
   { sender: 'Security', role: 'security-auditor', msg: 'heads up — that API key should be in env vars, not hardcoded' },
   { sender: 'Reviewer', role: 'code-reviewer', msg: 'lgtm on the PR, just one nit on the error handling' },
+  { sender: 'SEO Writer', role: 'seo-writer', msg: 'today\'s article is outlined — keyword is in the title and first paragraph' },
+  { sender: 'Docs Writer', role: 'docs-writer', msg: 'README is updated, the new setup steps are documented' },
   { sender: 'DBA', role: 'database-architect', msg: 'added an index on user_id, queries are 10x faster now' },
   { sender: 'DevOps', role: 'devops-engineer', msg: 'staging deploy is green, promoting to prod' },
   { sender: 'Claude', role: 'assistant', msg: 'the printer jammed again. third time today.' },
