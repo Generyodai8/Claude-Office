@@ -22,7 +22,8 @@
     "electron": "electron .",
     "start": "npm run dev:electron",
     "server": "node server/index.js",
-    "install-hooks": "bash hooks/install-hooks.sh"
+    "install-hooks": "bash hooks/install-hooks.sh",
+    "telegram:chat-id": "node scripts/telegram-chat-id.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.8.0",

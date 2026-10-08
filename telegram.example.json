@@ -1,0 +1,6 @@
+{
+  "botToken": "TOKEN_DARI_BOTFATHER",
+  "chatId": "ID_CHAT_ANDA",
+  "enabled": true,
+  "sendStarted": false
+}

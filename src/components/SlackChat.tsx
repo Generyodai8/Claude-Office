@@ -251,6 +251,7 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
           <div className="slack-slash-hint">
             <span className="slack-slash-cmd">/status</span>
             <span className="slack-slash-cmd">/agents</span>
+            <span className="slack-slash-cmd">/telegram</span>
             <span className="slack-slash-cmd">/help</span>
             <span className="slack-slash-cmd">/the-office</span>
           </div>

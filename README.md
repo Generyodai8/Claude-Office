@@ -167,6 +167,26 @@ Add the hook to `~/.claude/settings.json`:
 
 Now spawn agents in Claude Code and watch them appear in the office.
 
+## Notifikasi Telegram (hasil agen dikirim ke HP Anda)
+
+Setiap kali sub-agen selesai, hasil lengkapnya (nama agen, tugas, durasi, dan isi hasil) dikirim ke Telegram Anda. Hasil yang panjang dipecah jadi maksimal 3 pesan.
+
+1. Di Telegram, buka **@BotFather**, kirim `/newbot`, ikuti langkahnya, lalu salin **token** yang diberikan.
+2. Buat file `telegram.json` di folder `.agent-office` pada home directory Anda (Windows: `C:\Users\<nama>\.agent-office\telegram.json`). Contoh isi ada di `telegram.example.json`:
+   ```json
+   { "botToken": "TOKEN_DARI_BOTFATHER" }
+   ```
+3. Cari bot Anda di Telegram, tekan **Start**, kirim pesan apa saja.
+4. Jalankan `npm run telegram:chat-id`, lalu salin angka `chatId` yang muncul ke `telegram.json`:
+   ```json
+   { "botToken": "TOKEN_DARI_BOTFATHER", "chatId": "123456789" }
+   ```
+5. Jalankan ulang server (`npm run dev:all`), lalu ketik `/telegram` di chat kantor untuk mengirim pesan uji.
+
+Opsi lain di `telegram.json`: `"enabled": false` untuk mematikan sementara, `"sendStarted": true` untuk dikabari juga saat agen mulai. Bisa juga memakai variabel lingkungan `TELEGRAM_BOT_TOKEN` dan `TELEGRAM_CHAT_ID`.
+
+> Jaga kerahasiaan token: jangan di-commit atau dibagikan. File `telegram.json` berada di luar repo. Perlu diingat bahwa hasil agen (termasuk kode atau data di dalamnya) akan lewat server Telegram.
+
 ## Customise Your Character
 
 The boss character (you) is configurable via `office.config.json`:

@@ -19,6 +19,7 @@ import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { addMessage, getMessages, markSeen, addReaction } from './chat-db.js'
 import db from './chat-db.js'
+import { loadTelegramConfig, sendTelegram, formatAgentDone, formatAgentStarted } from './telegram.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -144,7 +145,9 @@ function validateEvent(body) {
 // ---------------------------------------------------------------------------
 
 const app = express()
-app.use(express.json({ limit: '10kb' }))
+// 256kb (bukan 10kb) supaya hasil lengkap agen bisa dikirim hook untuk Telegram.
+// Server hanya mendengarkan 127.0.0.1 dan /event wajib memakai token.
+app.use(express.json({ limit: '256kb' }))
 
 // CORS for local dev — only allow known localhost origins
 app.use((req, res, next) => {
@@ -250,8 +253,20 @@ function handleSlashCommand(cmd) {
       db.prepare('DELETE FROM messages').run()
       return '🧹 Chat dibersihkan'
     }
+    case '/telegram': {
+      const tg = loadTelegramConfig()
+      if (!tg.configured) {
+        return '📨 Telegram belum dikonfigurasi — isi botToken dan chatId di ~/.agent-office/telegram.json lalu coba lagi'
+      }
+      sendTelegram('✅ Tes dari Agent Office — koneksi Telegram berhasil.').then(r => {
+        const text = r.ok ? '📨 Pesan uji terkirim ke Telegram' : `📨 Gagal mengirim ke Telegram: ${r.reason}`
+        const sysMsg = addMessage({ sender: 'system', text, isSystem: true })
+        broadcast({ type: 'chat_message', ...sysMsg, isSystem: true })
+      })
+      return '📨 Mengirim pesan uji ke Telegram...'
+    }
     case '/help':
-      return '📋 Perintah: /status — statistik kantor, /agents — daftar agen, /clear — hapus riwayat chat, /help — pesan ini'
+      return '📋 Perintah: /status — statistik kantor, /agents — daftar agen, /clear — hapus riwayat chat, /telegram — tes koneksi Telegram, /help — pesan ini'
     default:
       return null
   }
@@ -435,6 +450,17 @@ app.post('/chat/cron-state', (req, res) => {
 // Event processing — normalise incoming hook payloads
 // ---------------------------------------------------------------------------
 
+/** Kirim ke Telegram tanpa menunggu; kegagalan hanya dicatat (tanpa token). */
+function notifyTelegram(text) {
+  sendTelegram(text)
+    .then(r => {
+      if (!r.ok && r.reason !== 'not-configured') {
+        console.warn(`[telegram] gagal mengirim: ${r.reason}`)
+      }
+    })
+    .catch(() => {})
+}
+
 function processEvent(body) {
   switch (body.type) {
     case 'agent_spawned': {
@@ -457,6 +483,9 @@ function processEvent(body) {
         const chatMsg = addMessage({ sender: record.name, role: record.role, text: `mulai: ${taskShort}` })
         broadcast({ type: 'chat_message', ...chatMsg })
       }
+
+      // Telegram (opsional): kabari saat agen mulai kalau sendStarted aktif
+      if (loadTelegramConfig().sendStarted) notifyTelegram(formatAgentStarted(record))
 
       return { type: 'agent_spawned', agent: record, timestamp: Date.now() }
     }
@@ -491,6 +520,13 @@ function processEvent(body) {
           sendNotification('Agen Gagal', agent.name + ' gagal')
         }
       }
+      // Telegram: kirim hasil lengkap agen (fullResult dari hook, dibatasi 20.000 karakter).
+      // Agen tetap tercatat 10 detik setelah selesai, jadi nama/tugasnya masih tersedia.
+      {
+        const fullResult = typeof body.fullResult === 'string' ? body.fullResult.slice(0, 20_000) : ''
+        notifyTelegram(formatAgentDone(id ? activeAgents.get(id) : null, fullResult || body.result))
+      }
+
       console.log(`[-] Agent completed: ${id}`)
       return { type: 'agent_completed', agentId: id, result: body.result, timestamp: Date.now() }
     }

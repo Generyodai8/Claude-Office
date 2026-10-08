@@ -31,13 +31,14 @@ if [ -f "$TOKEN_FILE" ]; then
 fi
 
 # Extract common fields and build event JSON in a single Python invocation.
-# All variable data is passed via stdin; no shell variables are interpolated
-# into Python source code.
-EVENT_JSON=$(HOOK_PAYLOAD="$PAYLOAD" python3 - <<'PYEOF'
+# The payload is piped via stdin (not an environment variable) so large agent
+# results do not hit environment size limits (notably on Windows), and no shell
+# variables are interpolated into Python source code.
+PYSCRIPT=$(cat <<'PYEOF'
 import json, sys, os, re
 
 try:
-    d = json.loads(os.environ.get('HOOK_PAYLOAD', '{}'))
+    d = json.loads(sys.stdin.buffer.read().decode('utf-8', 'replace') or '{}')
 except Exception:
     sys.exit(0)
 
@@ -159,18 +160,31 @@ if tool_name in ('Agent', 'Task'):
         tool_use_id = d.get('tool_use_id', '')
         agent_id = f'agent-{tool_use_id}' if tool_use_id else ''
 
-        resp = d.get('tool_response', {})
-        if isinstance(resp, dict):
-            result = resp.get('output', resp.get('result', 'selesai'))
-        elif isinstance(resp, str):
-            result = resp[:120]
-        else:
-            result = 'selesai'
+        def extract_text(node):
+            """Ambil teks dari tool_response (string, list, atau dict berisi output/result/text/content)."""
+            if isinstance(node, str):
+                return node
+            if isinstance(node, list):
+                return '\n'.join(t for t in (extract_text(x) for x in node) if t)
+            if isinstance(node, dict):
+                for key in ('output', 'result', 'text', 'content'):
+                    value = node.get(key)
+                    if value:
+                        text = extract_text(value)
+                        if text:
+                            return text
+            return ''
 
+        full = extract_text(d.get('tool_response', {})).strip()
+        summary = ' '.join(full.split())[:120] or 'selesai'
+
+        # 'result' = ringkasan pendek untuk tampilan kantor;
+        # 'fullResult' = hasil lengkap (dipakai untuk notifikasi Telegram).
         print(json.dumps({
-            'type':    'agent_completed',
-            'agentId': agent_id,
-            'result':  str(result)[:120],
+            'type':       'agent_completed',
+            'agentId':    agent_id,
+            'result':     summary,
+            'fullResult': full[:12000],
         }))
 
     sys.exit(0)
@@ -200,6 +214,7 @@ if hook_event == 'PreToolUse' and tool_name in ('Read', 'Write', 'Edit', 'Bash',
 sys.exit(0)
 PYEOF
 )
+EVENT_JSON=$(printf '%s' "$PAYLOAD" | python3 -c "$PYSCRIPT")
 
 # If Python produced no output, nothing to send
 if [ -z "$EVENT_JSON" ]; then
@@ -207,18 +222,20 @@ if [ -z "$EVENT_JSON" ]; then
 fi
 
 # Send the event, including the auth header if we have a token
+# The body goes through stdin (--data-binary @-) so a large result never runs
+# into command-line length limits.
 if [ -n "$AUTH_HEADER" ]; then
-    curl -sf -X POST "$SERVER_URL" \
+    printf '%s' "$EVENT_JSON" | curl -sf -X POST "$SERVER_URL" \
         -H "Content-Type: application/json" \
         -H "$AUTH_HEADER" \
-        -d "$EVENT_JSON" \
-        --max-time 1 \
+        --data-binary @- \
+        --max-time 3 \
         > /dev/null 2>&1 &
 else
-    curl -sf -X POST "$SERVER_URL" \
+    printf '%s' "$EVENT_JSON" | curl -sf -X POST "$SERVER_URL" \
         -H "Content-Type: application/json" \
-        -d "$EVENT_JSON" \
-        --max-time 1 \
+        --data-binary @- \
+        --max-time 3 \
         > /dev/null 2>&1 &
 fi
 
