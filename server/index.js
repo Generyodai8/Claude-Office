@@ -239,19 +239,19 @@ function handleSlashCommand(cmd) {
       const agentCount = activeAgents.size
       const working = Array.from(activeAgents.values()).filter(a => a.state === 'working').length
       const clients = wss?.clients?.size ?? 0
-      return `📊 ${agentCount} agents active, ${working} working, ${clients} clients connected`
+      return `📊 ${agentCount} agen aktif, ${working} sedang bekerja, ${clients} klien terhubung`
     }
     case '/agents': {
       const agents = Array.from(activeAgents.values())
-      if (agents.length === 0) return '🏢 Office is quiet — no agents active'
+      if (agents.length === 0) return '🏢 Kantor sepi — tidak ada agen aktif'
       return agents.map(a => `${a.name} (${a.role}) — ${a.state}`).join(', ')
     }
     case '/clear': {
       db.prepare('DELETE FROM messages').run()
-      return '🧹 Chat cleared'
+      return '🧹 Chat dibersihkan'
     }
     case '/help':
-      return '📋 Commands: /status — office stats, /agents — list agents, /clear — wipe chat history, /help — this message'
+      return '📋 Perintah: /status — statistik kantor, /agents — daftar agen, /clear — hapus riwayat chat, /help — pesan ini'
     default:
       return null
   }
@@ -295,7 +295,7 @@ app.post('/chat', (req, res) => {
 
   // Smart notification — ping when "claude" or "@claude" is mentioned
   if (/claude/i.test(text)) {
-    sendNotification('Office Chat', clampString(sender) + ': ' + text.slice(0, 50))
+    sendNotification('Chat Kantor', clampString(sender) + ': ' + text.slice(0, 50))
   }
 
   // Write to webhook file so Claude can detect new messages
@@ -454,7 +454,7 @@ function processEvent(body) {
       // Proactive message — announce task in chat
       const taskShort = (record.task ?? '').slice(0, 50)
       if (taskShort) {
-        const chatMsg = addMessage({ sender: record.name, role: record.role, text: `starting: ${taskShort}` })
+        const chatMsg = addMessage({ sender: record.name, role: record.role, text: `mulai: ${taskShort}` })
         broadcast({ type: 'chat_message', ...chatMsg })
       }
 
@@ -482,13 +482,13 @@ function processEvent(body) {
         setTimeout(() => activeAgents.delete(id), 10_000)
 
         // Proactive message — announce completion in chat
-        const resultShort = (body.result ?? 'done').slice(0, 50)
-        const chatMsg = addMessage({ sender: agent.name, role: agent.role, text: `done: ${resultShort}` })
+        const resultShort = (body.result ?? 'selesai').slice(0, 50)
+        const chatMsg = addMessage({ sender: agent.name, role: agent.role, text: `selesai: ${resultShort}` })
         broadcast({ type: 'chat_message', ...chatMsg })
 
         // Smart notification — alert on failure
-        if (/error|fail/i.test(body.result ?? '')) {
-          sendNotification('Agent Failed', agent.name + ' failed')
+        if (/error|fail|gagal|galat/i.test(body.result ?? '')) {
+          sendNotification('Agen Gagal', agent.name + ' gagal')
         }
       }
       console.log(`[-] Agent completed: ${id}`)

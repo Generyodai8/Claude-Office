@@ -139,7 +139,7 @@ if tool_name in ('Agent', 'Task'):
         name = name_map.get(role, 'Agent')
 
         # Truncate task description for display
-        task = description[:80] if description else 'Working on task'
+        task = description[:80] if description else 'Sedang mengerjakan tugas'
 
         # Stable ID based on tool_use_id if available
         tool_use_id = d.get('tool_use_id', '')
@@ -161,11 +161,11 @@ if tool_name in ('Agent', 'Task'):
 
         resp = d.get('tool_response', {})
         if isinstance(resp, dict):
-            result = resp.get('output', resp.get('result', 'done'))
+            result = resp.get('output', resp.get('result', 'selesai'))
         elif isinstance(resp, str):
             result = resp[:120]
         else:
-            result = 'done'
+            result = 'selesai'
 
         print(json.dumps({
             'type':    'agent_completed',
@@ -180,13 +180,13 @@ if hook_event == 'PreToolUse' and tool_name in ('Read', 'Write', 'Edit', 'Bash',
     inp = d.get('tool_input', {})
 
     status_map = {
-        'Read':  lambda i: f"reading {i.get('file_path', '').split('/')[-1]}",
-        'Write': lambda i: f"writing {i.get('file_path', '').split('/')[-1]}",
-        'Edit':  lambda i: f"editing {i.get('file_path', '').split('/')[-1]}",
-        'Bash':  lambda i: f"running: {(i.get('command', '') or i.get('description', ''))[:60]}",
-        'Grep':  lambda i: f"searching for '{i.get('pattern', '')[:30]}'",
-        'Glob':  lambda i: f"finding files: {i.get('pattern', '')[:40]}",
-        'Skill': lambda i: f"using /{i.get('skill', 'skill')}",
+        'Read':  lambda i: f"membaca {i.get('file_path', '').split('/')[-1]}",
+        'Write': lambda i: f"menulis {i.get('file_path', '').split('/')[-1]}",
+        'Edit':  lambda i: f"mengedit {i.get('file_path', '').split('/')[-1]}",
+        'Bash':  lambda i: f"menjalankan: {(i.get('command', '') or i.get('description', ''))[:60]}",
+        'Grep':  lambda i: f"mencari '{i.get('pattern', '')[:30]}'",
+        'Glob':  lambda i: f"mencari file: {i.get('pattern', '')[:40]}",
+        'Skill': lambda i: f"memakai /{i.get('skill', 'skill')}",
     }
 
     status_fn = status_map.get(tool_name)

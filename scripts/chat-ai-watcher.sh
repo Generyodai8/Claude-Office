@@ -84,21 +84,21 @@ if msgs:
 import sys
 msg = sys.stdin.read().lower()
 routes = [
-    (['seo','artikel','article','blog','keyword research','backlink','serp','meta description','daily post'], 'seo-writer', 'SEO Writer'),
-    (['docs','documentation','dokumentasi','readme','changelog','docstring','jsdoc'], 'docs-writer', 'Docs Writer'),
-    (['bug','error','crash','fix','broken','debug','exception','traceback','stack trace','segfault'], 'debugger', 'Debugger'),
-    (['review','pr','merge','approve','lgtm','pull request','code review','diff'], 'code-reviewer', 'Reviewer'),
-    (['css','ui','ux','component','design','frontend','style','layout','responsive','tailwind','animation','pixel','theme','dark mode','light mode','color','font','spacing','padding','margin'], 'frontend-developer', 'Frontend'),
-    (['test','coverage','spec','jest','pytest','unit test','e2e','playwright','cypress','assertion','mock'], 'test-engineer', 'Tester'),
-    (['security','auth','vuln','xss','injection','csrf','cors','token','jwt','oauth','password','encrypt','ssl','tls','certificate'], 'security-auditor', 'Security'),
+    (['seo','artikel','article','blog','keyword research','kata kunci','backlink','serp','meta description','daily post','artikel harian'], 'seo-writer', 'SEO Writer'),
+    (['docs','documentation','dokumentasi','panduan','readme','changelog','docstring','jsdoc'], 'docs-writer', 'Docs Writer'),
+    (['bug','error','crash','fix','broken','debug','exception','traceback','stack trace','segfault','galat','kesalahan','rusak','perbaiki','macet'], 'debugger', 'Debugger'),
+    (['review','pr','merge','approve','lgtm','pull request','code review','diff','tinjau','tinjauan'], 'code-reviewer', 'Reviewer'),
+    (['css','ui','ux','component','design','frontend','style','layout','responsive','tailwind','animation','pixel','theme','dark mode','light mode','color','font','spacing','padding','margin','tampilan','desain','warna','tombol','halaman'], 'frontend-developer', 'Frontend'),
+    (['test','coverage','spec','jest','pytest','unit test','e2e','playwright','cypress','assertion','mock','pengujian','uji coba'], 'test-engineer', 'Tester'),
+    (['security','auth','vuln','xss','injection','csrf','cors','token','jwt','oauth','password','encrypt','ssl','tls','certificate','keamanan','kata sandi','enkripsi'], 'security-auditor', 'Security'),
     (['deploy','ci','pipeline','docker','devops','kubernetes','k8s','terraform','aws','gcp','azure','vercel','netlify','heroku','nginx','cdn','dns','domain','ssl cert'], 'devops-engineer', 'DevOps'),
-    (['perf','slow','optimize','speed','latency','bundle','lighthouse','core web vitals','memory leak','cache','lazy load','render','fps','bottleneck'], 'performance-engineer', 'PerfEng'),
-    (['db','query','schema','migration','sql','postgres','mysql','mongo','redis','index','join','table','row','column','orm','prisma','drizzle','supabase','neon'], 'database-architect', 'DBA'),
+    (['perf','slow','optimize','speed','latency','bundle','lighthouse','core web vitals','memory leak','cache','lazy load','render','fps','bottleneck','lambat','kecepatan','performa','optimasi'], 'performance-engineer', 'PerfEng'),
+    (['db','query','schema','migration','sql','postgres','mysql','mongo','redis','index','join','table','row','column','orm','prisma','drizzle','supabase','neon','basis data','database','tabel','migrasi'], 'database-architect', 'DBA'),
     (['typescript','type','interface','generic','enum','union','infer','zod','validation','schema'], 'typescript-pro', 'TS Pro'),
     (['ai','llm','prompt','model','openai','anthropic','embedding','vector','rag','agent','token','context window'], 'ai-engineer', 'AI Eng'),
     (['api','endpoint','rest','graphql','webhook','route','middleware','request','response','http','fetch','axios','cors'], 'fullstack-developer', 'Fullstack'),
     (['git','branch','commit','rebase','cherry-pick','stash','conflict','remote','origin'], 'code-reviewer', 'Reviewer'),
-    (['refactor','clean','abstract','pattern','solid','dry','yagni','architecture','module','package','monorepo'], 'architect-reviewer', 'Architect'),
+    (['refactor','clean','abstract','pattern','solid','dry','yagni','architecture','module','package','monorepo','arsitektur','refaktor','struktur'], 'architect-reviewer', 'Architect'),
 ]
 for keywords, role, name in routes:
     if any(w in msg for w in keywords):
@@ -138,14 +138,14 @@ print(chr(10).join(lines))
     # Build prompt from persona + dev context + conversation context + message
     PROMPT="$PERSONA
 
-You are responding as $AGENT_NAME, the office $AGENT_ROLE. Stay in character.
+Kamu menjawab sebagai $AGENT_NAME, peran $AGENT_ROLE di kantor. Tetap sesuai karakter. Selalu balas dalam bahasa Indonesia.
 
 $DEV_CONTEXT
 
-Recent conversation:
+Percakapan terakhir:
 $CONTEXT
 
-Reply to the latest message naturally. Keep it short (8-12 words). Continue the conversation — reference previous messages if relevant."
+Balas pesan terbaru secara natural dalam bahasa Indonesia. Singkat saja (8-12 kata). Lanjutkan percakapan — rujuk pesan sebelumnya bila relevan."
 
     # Call Claude CLI
     REPLY=$(claude -p "$PROMPT" --max-turns 1 2>/dev/null | tr '\n' ' ' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')

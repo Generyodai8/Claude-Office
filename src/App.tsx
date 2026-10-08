@@ -113,8 +113,8 @@ function createBoss(): Agent {
     assignedRoom: 'main-office',
     assignedSpotId: spot.id,
     spriteFacing: spot.spriteFacing,
-    task: 'Running the show',
-    statusText: 'clocked in',
+    task: 'Memimpin kantor',
+    statusText: 'sudah masuk',
     color: cfg.color,
     emoji: cfg.emoji,
     hiredAt: Date.now(),
@@ -145,8 +145,8 @@ function createClaude(): Agent {
     assignedRoom: 'main-office',
     assignedSpotId: spot.id,
     spriteFacing: spot.spriteFacing,
-    task: 'Office assistant',
-    statusText: 'clocked in',
+    task: 'Asisten kantor',
+    statusText: 'sudah masuk',
     color: cfg.color,
     emoji: cfg.emoji,
     hiredAt: Date.now() + 500, // arrives just after the boss
@@ -198,82 +198,82 @@ interface PendingEffect {
 const SIM_SCENARIOS = [
   {
     role: 'security-auditor',
-    task: 'Auditing auth middleware for session token vulnerabilities',
+    task: 'Mengaudit middleware auth untuk celah token sesi',
     slackMessages: [
-      '🔍 scanning auth middleware...',
-      '⚠️ found session tokens stored in localStorage — flagging',
-      '🔐 checking CORS configuration on API endpoints',
-      '📋 reviewing JWT expiry and refresh flow',
-      '✅ auth audit complete — 2 issues found, PRs drafted',
+      '🔍 memindai middleware auth...',
+      '⚠️ token sesi tersimpan di localStorage — ditandai',
+      '🔐 mengecek konfigurasi CORS di endpoint API',
+      '📋 meninjau alur kedaluwarsa dan refresh JWT',
+      '✅ audit auth selesai — 2 isu ditemukan, PR sudah disiapkan',
     ],
   },
   {
     role: 'frontend-developer',
-    task: 'Building responsive dashboard with real-time charts',
+    task: 'Membangun dashboard responsif dengan grafik real-time',
     slackMessages: [
-      '🎨 scaffolding dashboard layout with grid system',
-      '📊 integrating chart library — testing with live data',
-      '💅 adding dark mode support to all components',
-      '🧪 writing component tests for chart rendering',
-      '🚀 dashboard ready for review',
+      '🎨 menyusun layout dashboard dengan sistem grid',
+      '📊 mengintegrasikan library grafik — diuji dengan data langsung',
+      '💅 menambah dukungan mode gelap ke semua komponen',
+      '🧪 menulis tes komponen untuk render grafik',
+      '🚀 dashboard siap direview',
     ],
   },
   {
     role: 'code-reviewer',
-    task: 'Reviewing PR #487 — payment processing refactor',
+    task: 'Meninjau PR #487 — refaktor pemrosesan pembayaran',
     slackMessages: [
-      '👀 opening PR #487 — 23 files changed',
-      '🔍 checking error handling in payment flow',
-      '💡 suggesting async/await instead of .then chains',
-      '⚡ found a potential race condition in webhook handler',
-      '✅ review complete — approved with 3 suggestions',
+      '👀 membuka PR #487 — 23 file berubah',
+      '🔍 mengecek penanganan error di alur pembayaran',
+      '💡 menyarankan async/await ketimbang rantai .then',
+      '⚡ menemukan potensi race condition di handler webhook',
+      '✅ review selesai — disetujui dengan 3 saran',
     ],
   },
   {
     role: 'seo-writer',
-    task: 'Writing today\'s SEO article — keyword research to publish',
+    task: 'Menulis artikel SEO hari ini — dari riset keyword sampai terbit',
     slackMessages: [
-      '🔎 researching keywords for today\'s article topic',
-      '📰 outlining headings around the main keyword',
-      '✍️ drafting intro and body — 1,200 words so far',
-      '🏷️ writing title tag and meta description',
-      '✅ daily article ready for review',
+      '🔎 meriset keyword untuk topik artikel hari ini',
+      '📰 menyusun kerangka heading dari keyword utama',
+      '✍️ menulis pembuka dan isi — sudah 1.200 kata',
+      '🏷️ menulis title tag dan meta description',
+      '✅ artikel harian siap direview',
     ],
   },
   {
     role: 'docs-writer',
-    task: 'Writing docs — README and API reference',
+    task: 'Menulis dokumentasi — README dan referensi API',
     slackMessages: [
-      '📚 reading the source to document public functions',
-      '📝 drafting the README quick start section',
-      '🧩 adding usage examples for each API endpoint',
-      '🔗 cross-linking the changelog and guides',
-      '✅ docs updated and ready to merge',
+      '📚 membaca source untuk mendokumentasikan fungsi publik',
+      '📝 menyusun bagian quick start di README',
+      '🧩 menambah contoh penggunaan tiap endpoint API',
+      '🔗 menautkan changelog dan panduan',
+      '✅ dokumentasi diperbarui, siap di-merge',
     ],
   },
 ]
 
 // Extra random slack chatter between agents
 const SIM_CHATTER = [
-  { sender: 'Debugger', role: 'debugger', msg: 'found a null pointer in the auth handler, patching now' },
-  { sender: 'Frontend', role: 'frontend-developer', msg: 'the new dark mode toggle is looking clean' },
-  { sender: 'Security', role: 'security-auditor', msg: 'heads up — that API key should be in env vars, not hardcoded' },
-  { sender: 'Reviewer', role: 'code-reviewer', msg: 'lgtm on the PR, just one nit on the error handling' },
-  { sender: 'SEO Writer', role: 'seo-writer', msg: 'today\'s article is outlined — keyword is in the title and first paragraph' },
-  { sender: 'Docs Writer', role: 'docs-writer', msg: 'README is updated, the new setup steps are documented' },
-  { sender: 'DBA', role: 'database-architect', msg: 'added an index on user_id, queries are 10x faster now' },
-  { sender: 'DevOps', role: 'devops-engineer', msg: 'staging deploy is green, promoting to prod' },
-  { sender: 'Claude', role: 'assistant', msg: 'the printer jammed again. third time today.' },
-  { sender: 'Tester', role: 'test-engineer', msg: 'coverage is at 94%, just need the edge cases' },
-  { sender: 'PerfEng', role: 'performance-engineer', msg: 'shaved 200ms off the initial load, LCP is under 2s' },
-  { sender: 'Frontend', role: 'frontend-developer', msg: 'responsive layout done, looks great on mobile' },
-  { sender: 'Claude', role: 'assistant', msg: 'someone get the coffee machine, its making that sound again' },
-  { sender: 'Architect', role: 'architect-reviewer', msg: 'the new module boundary looks solid, good separation' },
-  { sender: 'AI Eng', role: 'ai-engineer', msg: 'embeddings are indexed, RAG pipeline is live' },
-  { sender: 'TS Pro', role: 'typescript-pro', msg: 'fixed the generic inference, no more any casts' },
-  { sender: 'Antony', role: 'boss', msg: 'anyone want a Red Bull?' },
-  { sender: 'Antony', role: 'boss', msg: 'ship it, we\'ll fix it in prod' },
-  { sender: 'Antony', role: 'boss', msg: 'how are we looking on the dashboard?' },
+  { sender: 'Debugger', role: 'debugger', msg: 'nemu null pointer di auth handler, lagi di-patch' },
+  { sender: 'Frontend', role: 'frontend-developer', msg: 'toggle mode gelap yang baru kelihatan rapi' },
+  { sender: 'Security', role: 'security-auditor', msg: 'perhatian — API key itu harusnya di env var, bukan ditulis langsung di kode' },
+  { sender: 'Reviewer', role: 'code-reviewer', msg: 'lgtm untuk PR-nya, cuma satu catatan kecil soal error handling' },
+  { sender: 'SEO Writer', role: 'seo-writer', msg: 'artikel hari ini sudah diberi kerangka — keyword ada di judul dan paragraf pertama' },
+  { sender: 'Docs Writer', role: 'docs-writer', msg: 'README sudah diperbarui, langkah setup baru sudah terdokumentasi' },
+  { sender: 'DBA', role: 'database-architect', msg: 'menambah index di user_id, query sekarang 10x lebih cepat' },
+  { sender: 'DevOps', role: 'devops-engineer', msg: 'deploy staging hijau, naik ke produksi' },
+  { sender: 'Claude', role: 'assistant', msg: 'printernya macet lagi. sudah tiga kali hari ini.' },
+  { sender: 'Tester', role: 'test-engineer', msg: 'coverage sudah 94%, tinggal kasus tepi' },
+  { sender: 'PerfEng', role: 'performance-engineer', msg: 'memangkas 200ms dari load awal, LCP di bawah 2 detik' },
+  { sender: 'Frontend', role: 'frontend-developer', msg: 'layout responsif selesai, bagus di mobile' },
+  { sender: 'Claude', role: 'assistant', msg: 'tolong cek mesin kopi, bunyinya aneh lagi' },
+  { sender: 'Architect', role: 'architect-reviewer', msg: 'batas modul yang baru terlihat solid, pemisahannya bagus' },
+  { sender: 'AI Eng', role: 'ai-engineer', msg: 'embedding sudah terindeks, pipeline RAG sudah jalan' },
+  { sender: 'TS Pro', role: 'typescript-pro', msg: 'inferensi generic sudah diperbaiki, tidak ada lagi cast any' },
+  { sender: BOSS_NAME, role: 'boss', msg: 'ada yang mau Red Bull?' },
+  { sender: BOSS_NAME, role: 'boss', msg: 'rilis aja, nanti kita benerin di produksi' },
+  { sender: BOSS_NAME, role: 'boss', msg: 'bagaimana kondisi dashboard-nya?' },
 ]
 
 // Dunder Mifflin themed chatter — used when /the-office is active
@@ -292,10 +292,10 @@ const OFFICE_SIM_CHATTER = [
   { sender: 'Architect', role: 'architect-reviewer', msg: 'the Finer Things Club charter is immaculate' },
   { sender: 'AI Eng', role: 'ai-engineer', msg: 'teaching the copier to recognize Stanley\'s handwriting' },
   { sender: 'TS Pro', role: 'typescript-pro', msg: 'false. that is not a staple. it is a Dwight.' },
-  { sender: 'Antony', role: 'boss', msg: "anyone want to go to Chili's? I got Baby Back Ribs on the brain." },
-  { sender: 'Antony', role: 'boss', msg: 'ship it. we\'ll fix it in prod. PARKOUR!' },
-  { sender: 'Antony', role: 'boss', msg: 'how many reams did we move today?' },
-  { sender: 'Antony', role: 'boss', msg: "I'm not superstitious, but I am a little stitious." },
+  { sender: BOSS_NAME, role: 'boss', msg: "anyone want to go to Chili's? I got Baby Back Ribs on the brain." },
+  { sender: BOSS_NAME, role: 'boss', msg: 'ship it. we\'ll fix it in prod. PARKOUR!' },
+  { sender: BOSS_NAME, role: 'boss', msg: 'how many reams did we move today?' },
+  { sender: BOSS_NAME, role: 'boss', msg: "I'm not superstitious, but I am a little stitious." },
   { sender: 'Debugger', role: 'debugger', msg: 'Bears. Beets. Battlestar Galactica.' },
   { sender: 'Security', role: 'security-auditor', msg: 'Identity theft is not a joke, Jim! Millions of families suffer every year!' },
   { sender: 'Reviewer', role: 'code-reviewer', msg: "that's what she said" },
@@ -418,7 +418,7 @@ const App: React.FC = () => {
               state: 'walking-to-desk' as const,
               targetPosition: { ...a.deskPosition },
               pathQueue: computePath(a.position, a.deskPosition),
-              statusText: 'back to work',
+              statusText: 'kembali bekerja',
             }
           }))
         }, interaction.duration + 500)
@@ -525,10 +525,10 @@ const App: React.FC = () => {
     if (arrivedRef.current) return
     arrivedRef.current = true
     const bossCfg = AGENT_CONFIGS[BOSS_ROLE] ?? AGENT_CONFIGS['default']
-    addMsg(bossCfg.title, BOSS_ROLE, bossCfg.color, '👑 clocked in')
+    addMsg(bossCfg.title, BOSS_ROLE, bossCfg.color, '👑 sudah masuk')
     const claudeCfg = AGENT_CONFIGS[CLAUDE_ROLE] ?? AGENT_CONFIGS['default']
     setTimeout(() => {
-      addMsg(claudeCfg.title, CLAUDE_ROLE, claudeCfg.color, '🤖 clocked in')
+      addMsg(claudeCfg.title, CLAUDE_ROLE, claudeCfg.color, '🤖 sudah masuk')
     }, 1500)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -618,7 +618,7 @@ const App: React.FC = () => {
 
           if (!spot) {
             const cfg = AGENT_CONFIGS[role] ?? AGENT_CONFIGS['default']
-            effects.push({ msg: { sender: name, role, color: cfg.color, text: 'waiting for a desk...' } })
+            effects.push({ msg: { sender: name, role, color: cfg.color, text: 'menunggu meja kosong...' } })
             return prev
           }
 
@@ -707,16 +707,16 @@ const App: React.FC = () => {
             // Boss replies to completed tasks
             const bossCfg = AGENT_CONFIGS[BOSS_ROLE] ?? AGENT_CONFIGS['default']
             const bossReplies = [
-              `nice work ${a.name} 👊`,
-              `solid 🔥`,
-              `ship it!`,
-              `great stuff, grab a Red Bull`,
-              `legend 💯`,
-              `good job, who\'s next?`,
-              `that was quick, another one?`,
-              `clean work 👌`,
-              `cheers ${a.name}`,
-              `merged. next task loading...`,
+              `kerja bagus ${a.name} 👊`,
+              `mantap 🔥`,
+              `rilis!`,
+              `keren, ambil Red Bull dulu`,
+              `legenda 💯`,
+              `kerja bagus, berikutnya siapa?`,
+              `cepat banget, mau satu lagi?`,
+              `rapi banget 👌`,
+              `terima kasih ${a.name}`,
+              `sudah merge. tugas berikutnya dimuat...`,
             ]
             // Why: when Office theme is on, Michael Scott occasionally lands his signature line.
             const isMichael = getTheme() === 'office'
@@ -769,7 +769,7 @@ const App: React.FC = () => {
           if (!id) return prev
           return prev.map(a =>
             a.id === id
-              ? { ...a, statusText: event.result ?? 'done' }
+              ? { ...a, statusText: event.result ?? 'selesai' }
               : a
           )
         }
@@ -1021,7 +1021,7 @@ const App: React.FC = () => {
         })
         // Proactive "starting:" message a moment after spawn
         timers.push(setTimeout(() => {
-          addMsg(cfg.title, sim.role, cfg.color, `starting: ${sim.task}`)
+          addMsg(cfg.title, sim.role, cfg.color, `mulai: ${sim.task}`)
         }, 1200))
       }, spawnAt))
     })
@@ -1055,7 +1055,9 @@ const App: React.FC = () => {
           // Trigger ultra-think powerup on specific messages
           if (sim.slackMessages[msgIdx].includes('race condition') ||
               sim.slackMessages[msgIdx].includes('scanning') ||
-              sim.slackMessages[msgIdx].includes('architecture')) {
+              sim.slackMessages[msgIdx].includes('memindai') ||
+              sim.slackMessages[msgIdx].includes('architecture') ||
+              sim.slackMessages[msgIdx].includes('arsitektur')) {
             setAgents(prev => prev.map(a =>
               a.role === sim.role
                 ? { ...a, statusText: 'ultra-think: deep analysis...' }
@@ -1107,21 +1109,21 @@ const App: React.FC = () => {
           id: 'sim-explore',
           name: exploreCfg.title,
           role: 'Explore',
-          task: 'Searching codebase for API endpoint patterns',
+          task: 'Mencari pola endpoint API di codebase',
         },
       })
       timers.push(setTimeout(() => {
-        addMsg(exploreCfg.title, 'Explore', exploreCfg.color, 'starting: Searching codebase for API endpoint patterns')
+        addMsg(exploreCfg.title, 'Explore', exploreCfg.color, 'mulai: Mencari pola endpoint API di codebase')
       }, 1200))
       // Explorer completes and leaves after 20s
       timers.push(setTimeout(() => {
         handleEvent({
           type: 'agent_completed',
           agentId: 'sim-explore',
-          result: 'Found 12 API endpoints across 4 route files',
+          result: 'Menemukan 12 endpoint API di 4 file route',
         })
         timers.push(setTimeout(() => {
-          addMsg(exploreCfg.title, 'Explore', exploreCfg.color, 'done: Found 12 API endpoints across 4 route files')
+          addMsg(exploreCfg.title, 'Explore', exploreCfg.color, 'selesai: Menemukan 12 endpoint API di 4 file route')
         }, 800))
       }, 20000))
     }, 25000))
@@ -1131,11 +1133,11 @@ const App: React.FC = () => {
       handleEvent({
         type: 'agent_completed',
         agentId: 'sim-code-reviewer',
-        result: 'PR #487 approved — ready to merge',
+        result: 'PR #487 disetujui — siap di-merge',
       })
       timers.push(setTimeout(() => {
         const reviewCfg = AGENT_CONFIGS['code-reviewer'] ?? AGENT_CONFIGS['default']
-        addMsg(reviewCfg.title, 'code-reviewer', reviewCfg.color, 'done: PR #487 approved — ready to merge')
+        addMsg(reviewCfg.title, 'code-reviewer', reviewCfg.color, 'selesai: PR #487 disetujui — siap di-merge')
       }, 800))
       // Replacement agent arrives
       timers.push(setTimeout(() => {
@@ -1146,11 +1148,11 @@ const App: React.FC = () => {
             id: 'sim-debugger',
             name: cfg.title,
             role: 'debugger',
-            task: 'Investigating null pointer in payment webhook handler',
+            task: 'Menyelidiki null pointer di handler webhook pembayaran',
           },
         })
         timers.push(setTimeout(() => {
-          addMsg(cfg.title, 'debugger', cfg.color, 'starting: Investigating null pointer in payment webhook handler')
+          addMsg(cfg.title, 'debugger', cfg.color, 'mulai: Menyelidiki null pointer di handler webhook pembayaran')
         }, 1200))
       }, 8000))
     }, 50000))
@@ -1176,22 +1178,22 @@ const App: React.FC = () => {
     // 0-3s: Office is just Antony, settling in
     timers.push(setTimeout(() => {
       addMsg(bossCfg.title, BOSS_ROLE, bossCfg.color,
-        officeSim0 ? "👑 World's Best Boss clocked in, let's sell some paper" : '👑 clocked in, lets get to work')
+        officeSim0 ? "👑 World's Best Boss clocked in, let's sell some paper" : '👑 sudah masuk, ayo mulai kerja')
     }, 2000))
 
     // 4s: Antony types a question in Slack
     timers.push(setTimeout(() => {
       setAutoTypeText(officeSim0
-        ? (OFFICE_SIM_BOSS_PROMPTS[0] ?? '/ultra-think audit our authentication system for security vulnerabilities')
-        : '/ultra-think audit our authentication system for security vulnerabilities')
+        ? (OFFICE_SIM_BOSS_PROMPTS[0] ?? '/ultra-think audit sistem autentikasi kita untuk celah keamanan')
+        : '/ultra-think audit sistem autentikasi kita untuk celah keamanan')
     }, 4000))
 
     // 8s: 3 agents spawn with ultra-think tasks (energy drinks!)
     timers.push(setTimeout(() => {
       const spawns = [
-        { id: 'vid-security', role: 'security-auditor', name: 'Security', task: 'ultra-think: deep analysis of auth middleware vulnerabilities' },
-        { id: 'vid-reviewer', role: 'code-reviewer', name: 'Reviewer', task: 'ultra-think: reviewing authentication token handling' },
-        { id: 'vid-frontend', role: 'frontend-developer', name: 'Frontend', task: 'ultra-think: auditing client-side auth state management' },
+        { id: 'vid-security', role: 'security-auditor', name: 'Security', task: 'ultra-think: analisis mendalam celah keamanan middleware auth' },
+        { id: 'vid-reviewer', role: 'code-reviewer', name: 'Reviewer', task: 'ultra-think: meninjau penanganan token autentikasi' },
+        { id: 'vid-frontend', role: 'frontend-developer', name: 'Frontend', task: 'ultra-think: mengaudit pengelolaan state auth di sisi klien' },
       ]
       spawns.forEach((s, i) => {
         timers.push(setTimeout(() => {
@@ -1204,14 +1206,14 @@ const App: React.FC = () => {
     // Why: swap to Office-themed chatter when /the-office mode is on at sim start
     const isOfficeSim = getTheme() === 'office'
     const defaultToolMessages = [
-      { t: 16000, sender: 'Security', role: 'security-auditor', text: '⚡ reading src/auth/middleware.ts' },
-      { t: 18000, sender: 'Reviewer', role: 'code-reviewer', text: '⚡ running: grep -r "jwt" src/' },
-      { t: 20000, sender: 'Security', role: 'security-auditor', text: '⚠️ session tokens stored in localStorage — XSS risk' },
-      { t: 22000, sender: 'Frontend', role: 'frontend-developer', text: '⚡ reading src/hooks/useAuth.ts' },
-      { t: 24000, sender: 'Reviewer', role: 'code-reviewer', text: '🔍 checking CORS config on /api/auth endpoints' },
-      { t: 26000, sender: 'Security', role: 'security-auditor', text: '🚨 JWT refresh token has no expiry set' },
-      { t: 28000, sender: 'Frontend', role: 'frontend-developer', text: '⚡ editing src/auth/tokenStore.ts' },
-      { t: 30000, sender: 'Reviewer', role: 'code-reviewer', text: '💡 suggesting httpOnly cookies instead of localStorage' },
+      { t: 16000, sender: 'Security', role: 'security-auditor', text: '⚡ membaca src/auth/middleware.ts' },
+      { t: 18000, sender: 'Reviewer', role: 'code-reviewer', text: '⚡ menjalankan: grep -r "jwt" src/' },
+      { t: 20000, sender: 'Security', role: 'security-auditor', text: '⚠️ token sesi disimpan di localStorage — berisiko XSS' },
+      { t: 22000, sender: 'Frontend', role: 'frontend-developer', text: '⚡ membaca src/hooks/useAuth.ts' },
+      { t: 24000, sender: 'Reviewer', role: 'code-reviewer', text: '🔍 mengecek konfigurasi CORS di endpoint /api/auth' },
+      { t: 26000, sender: 'Security', role: 'security-auditor', text: '🚨 refresh token JWT tidak punya masa kedaluwarsa' },
+      { t: 28000, sender: 'Frontend', role: 'frontend-developer', text: '⚡ mengedit src/auth/tokenStore.ts' },
+      { t: 30000, sender: 'Reviewer', role: 'code-reviewer', text: '💡 menyarankan cookie httpOnly sebagai ganti localStorage' },
     ]
     const toolMessages = isOfficeSim
       ? defaultToolMessages.map((m, i) => {
@@ -1228,7 +1230,7 @@ const App: React.FC = () => {
 
     // 25s: Antony types a follow-up
     timers.push(setTimeout(() => {
-      setAutoTypeText(isOfficeSim ? (OFFICE_SIM_BOSS_PROMPTS[1] ?? 'how bad is the localStorage issue?') : 'how bad is the localStorage issue?')
+      setAutoTypeText(isOfficeSim ? (OFFICE_SIM_BOSS_PROMPTS[1] ?? 'seberapa parah masalah localStorage ini?') : 'seberapa parah masalah localStorage ini?')
     }, 25000))
 
     // 27s: Agent replies
@@ -1237,20 +1239,20 @@ const App: React.FC = () => {
       addMsg('Security', 'security-auditor', cfg.color,
         isOfficeSim
           ? 'critical — Dwight-level bad. any XSS gives full account takeover. moving to httpOnly cookies now'
-          : 'critical — any XSS gives full account takeover. moving to httpOnly cookies now')
+          : 'kritis — XSS apa pun bisa mengambil alih akun sepenuhnya. pindah ke cookie httpOnly sekarang')
     }, 27500))
 
     // 30s: Random chatter
     timers.push(setTimeout(() => {
       const cfg = AGENT_CONFIGS['frontend-developer'] ?? AGENT_CONFIGS['default']
       addMsg('Frontend', 'frontend-developer', cfg.color,
-        isOfficeSim ? 'I can handle the cookie migration — easier than organizing the Dundies' : 'I can handle the cookie migration on the client side')
+        isOfficeSim ? 'I can handle the cookie migration — easier than organizing the Dundies' : 'aku yang tangani migrasi cookie di sisi klien')
     }, 30000))
 
     timers.push(setTimeout(() => {
       const cfg = AGENT_CONFIGS['code-reviewer'] ?? AGENT_CONFIGS['default']
       addMsg('Reviewer', 'code-reviewer', cfg.color,
-        isOfficeSim ? 'lgtm. ship it to Stamford, boom. roasted.' : 'lgtm on the approach, lets ship it')
+        isOfficeSim ? 'lgtm. ship it to Stamford, boom. roasted.' : 'lgtm untuk pendekatannya, ayo rilis')
     }, 32000))
 
     // 33s: Antony checks status with a slash command
@@ -1262,23 +1264,23 @@ const App: React.FC = () => {
     timers.push(setTimeout(() => {
       handleEvent({
         type: 'agent_spawned',
-        agent: { id: 'vid-explore', name: 'Explorer', role: 'Explore', task: 'Scanning auth-related files across codebase' },
+        agent: { id: 'vid-explore', name: 'Explorer', role: 'Explore', task: 'Memindai file terkait auth di seluruh codebase' },
       })
     }, 35000))
 
     // 38s: Pizza delivery event!
     timers.push(setTimeout(() => {
       addMsg('system', 'default', '#8b8d91',
-        officeSim0 ? '🥨 IT\'S PRETZEL DAY' : '🍕 Pizza has arrived! Free lunch!', true)
+        officeSim0 ? '🥨 IT\'S PRETZEL DAY' : '🍕 Pizza sudah datang! Makan siang gratis!', true)
       addMsg(bossCfg.title, BOSS_ROLE, bossCfg.color,
-        officeSim0 ? "You don't understand. It's pretzel day." : 'Pizza in the lobby!')
+        officeSim0 ? "You don't understand. It's pretzel day." : 'Pizza di lobi!')
       // Move all agents to door
       setAgents(prev => prev.map(a => ({
         ...a,
         state: 'walking-to-desk' as const,
         targetPosition: { x: 67.5, y: 48.9 },
         pathQueue: computePath(a.position, { x: 67.5, y: 48.9 }),
-        statusText: 'Pizza Delivery',
+        statusText: 'Pizza Datang',
       })))
       // Back to desks after 5s
       timers.push(setTimeout(() => {
@@ -1287,7 +1289,7 @@ const App: React.FC = () => {
           state: 'walking-to-desk' as const,
           targetPosition: { ...a.deskPosition },
           pathQueue: computePath(a.position, a.deskPosition),
-          statusText: 'back to work',
+          statusText: 'kembali bekerja',
         })))
       }, 5000))
     }, 38000))
@@ -1296,7 +1298,7 @@ const App: React.FC = () => {
     timers.push(setTimeout(() => {
       const cfg = AGENT_CONFIGS['security-auditor'] ?? AGENT_CONFIGS['default']
       addMsg('Security', 'security-auditor', cfg.color,
-        officeSim0 ? 'all the toppings. Stanley has been waiting all year.' : 'pineapple on pizza is a security vulnerability')
+        officeSim0 ? 'all the toppings. Stanley has been waiting all year.' : 'nanas di atas pizza itu celah keamanan')
     }, 46000))
 
     timers.push(setTimeout(() => {
@@ -1312,7 +1314,7 @@ const App: React.FC = () => {
         agentId: 'vid-security',
         result: officeSim0
           ? 'Audit complete — beets secured. 3 critical issues booked into the Schrute Manual.'
-          : 'Auth audit complete — 3 critical issues fixed, 2 PRs merged',
+          : 'Audit auth selesai — 3 isu kritis diperbaiki, 2 PR di-merge',
       })
     }, 48000))
 
@@ -1321,24 +1323,24 @@ const App: React.FC = () => {
       handleEvent({
         type: 'agent_completed',
         agentId: 'vid-explore',
-        result: officeSim0 ? 'Found 8 auth files — all filed under B for "Beet".' : 'Found 8 auth-related files, all updated',
+        result: officeSim0 ? 'Found 8 auth files — all filed under B for "Beet".' : 'Menemukan 8 file terkait auth, semuanya diperbarui',
       })
     }, 52000))
 
     // 55s: Antony wraps up
     timers.push(setTimeout(() => {
-      setAutoTypeText(officeSim0 ? 'great work team — boom. roasted. 🥨' : 'great work team, ship it! 🚀')
+      setAutoTypeText(officeSim0 ? 'great work team — boom. roasted. 🥨' : 'kerja bagus tim, rilis! 🚀')
     }, 55000))
 
     // 58s: Remaining agents complete
     timers.push(setTimeout(() => {
       handleEvent({ type: 'agent_completed', agentId: 'vid-reviewer',
-        result: officeSim0 ? 'All PRs reviewed — Jim-approved.' : 'All PRs reviewed and approved' })
+        result: officeSim0 ? 'All PRs reviewed — Jim-approved.' : 'Semua PR sudah direview dan disetujui' })
     }, 58000))
 
     timers.push(setTimeout(() => {
       handleEvent({ type: 'agent_completed', agentId: 'vid-frontend',
-        result: officeSim0 ? 'Cookies deployed — Kevin took half for his chili.' : 'Cookie migration deployed to staging' })
+        result: officeSim0 ? 'Cookies deployed — Kevin took half for his chili.' : 'Migrasi cookie sudah di-deploy ke staging' })
     }, 60000))
 
     return () => timers.forEach(t => clearTimeout(t))
@@ -1515,7 +1517,7 @@ const App: React.FC = () => {
 
               const cfg = AGENT_CONFIGS[updated.role] ?? AGENT_CONFIGS['default']
               const isBoss = updated.id === BOSS_ID
-              const breakMsg = useWater ? waterMessage() : (isBoss ? 'grabbing a Red Bull' : coffeeMessage())
+              const breakMsg = useWater ? waterMessage() : (isBoss ? 'ambil Red Bull dulu' : coffeeMessage())
               const breakIcon = isBoss ? '🥫' : (useWater ? '💧' : '☕')
               addMsg(updated.name, updated.role, cfg.color, `${breakIcon} ${breakMsg}`)
               if (!sfx.isMuted()) sfx.playCoffee()
@@ -1643,7 +1645,7 @@ const App: React.FC = () => {
             ...a,
             state: 'walking-to-desk' as const,
             targetPosition: { ...a.deskPosition },
-            statusText: 'back to work',
+            statusText: 'kembali bekerja',
             pathQueue: computePath(a.position, a.deskPosition),
           })))
         }, event.duration)
@@ -1681,7 +1683,7 @@ const App: React.FC = () => {
                 ...a,
                 state: 'walking-to-desk' as const,
                 targetPosition: { ...a.deskPosition },
-                statusText: 'back to work',
+                statusText: 'kembali bekerja',
                 pathQueue: computePath(a.position, a.deskPosition),
               }
             }))

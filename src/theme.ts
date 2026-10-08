@@ -210,21 +210,21 @@ const OFFICE_WATER = [
 ]
 
 const DEFAULT_SPAWN = [
-  'reporting for duty!', 'clocked in', 'ready to ship',
-  'coffee first, then code', "let's do this", 'opening vim...', 'pulling latest main',
+  'siap bertugas!', 'sudah masuk', 'siap rilis',
+  'kopi dulu, baru coding', 'ayo kita mulai', 'membuka vim...', 'menarik main terbaru',
 ]
 const DEFAULT_WORK = [
-  'on it', 'typing furiously', 'in the zone', 'making progress',
-  'checking the docs', 'git blame time', 'stack overflow to the rescue',
+  'siap, dikerjakan', 'mengetik cepat', 'lagi fokus', 'ada kemajuan',
+  'cek dokumentasi dulu', 'waktunya git blame', 'stack overflow, tolong aku',
 ]
 const DEFAULT_DONE = [
-  'task complete!', 'shipped it', 'PR opened', 'done and dusted',
-  'LGTM', 'merged to main', 'deployed',
+  'tugas selesai!', 'sudah dirilis', 'PR sudah dibuka', 'beres tuntas',
+  'LGTM', 'sudah merge ke main', 'sudah deploy',
 ]
-const DEFAULT_COFFEE = ['brb, coffee', 'need caffeine', 'grabbing a cup', 'coffee run']
+const DEFAULT_COFFEE = ['bentar, ngopi dulu', 'butuh kafein', 'ambil kopi dulu', 'ngopi sebentar']
 const DEFAULT_WATER = [
-  'stay hydrated', 'h2o break', 'water run', 'refilling bottle',
-  'hydration check', 'quick water break',
+  'tetap terhidrasi', 'waktunya minum', 'isi air minum', 'isi ulang botol',
+  'cek hidrasi', 'istirahat minum sebentar',
 ]
 
 export function themedSpawn(): string  { return pick(state.name === 'office' ? OFFICE_SPAWN  : DEFAULT_SPAWN) }

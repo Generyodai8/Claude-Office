@@ -9,7 +9,7 @@ function getAvatarSrc(role: string, agentId?: string): string {
 }
 
 // Proactive message detection: agent announcements about starting/completing work
-const PROACTIVE_PATTERN = /\b(starting|started|done|finished|completed|ready|working on|picking up|taking over)\b/i
+const PROACTIVE_PATTERN = /\b(starting|started|done|finished|completed|ready|working on|picking up|taking over|mulai|memulai|dimulai|selesai|rampung|siap|mengerjakan|mengambil alih)\b/i
 
 export interface ChatMessage {
   id: number
@@ -140,12 +140,12 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
           <div
             className={`slack-cron-toggle ${cronPaused ? 'paused' : 'active'}`}
             onClick={toggleCron}
-            title={cronPaused ? 'Chat monitor paused — click to resume' : 'Chat monitor active — click to pause'}
+            title={cronPaused ? 'Pemantau chat dijeda — klik untuk melanjutkan' : 'Pemantau chat aktif — klik untuk menjeda'}
           >
             <div className="slack-cron-track">
               <div className="slack-cron-thumb" />
             </div>
-            <span className="slack-cron-label">{cronPaused ? 'AI Off' : 'AI On'}</span>
+            <span className="slack-cron-label">{cronPaused ? 'AI Mati' : 'AI Aktif'}</span>
           </div>
           <button className="slack-mute-btn" onClick={onToggleMute}>
             {muted ? '🔇' : volume < 0.4 ? '🔈' : '🔊'}
@@ -206,7 +206,7 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
                           key={i}
                           className="slack-reaction"
                           onClick={() => handleReaction(msg, r)}
-                          title="Click to remove"
+                          title="Klik untuk menghapus"
                         >{r}</span>
                       ))}
                     </div>
@@ -226,7 +226,7 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
               </div>
               {lastSeenId != null && msg.id === lastSeenId && (
                 <div className="slack-seen-row">
-                  <span className="slack-seen-label">Seen</span>
+                  <span className="slack-seen-label">Dibaca</span>
                   <img src={getAvatarSrc('assistant')} className="slack-seen-avatar" alt="seen" />
                 </div>
               )}
@@ -239,7 +239,7 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
               <img src={getAvatarSrc('assistant')} alt="typing" className="slack-avatar-img" />
             </div>
             <div className="slack-msg-content">
-              <div className="slack-typing-label">{typingUser} is typing</div>
+              <div className="slack-typing-label">{typingUser} sedang mengetik</div>
               <div className="slack-typing-dots"><span/><span/><span/></div>
             </div>
           </div>
@@ -259,7 +259,7 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
           <input
             type="text"
             className="slack-input-field"
-            placeholder="Message #office-general"
+            placeholder="Kirim pesan ke #office-general"
             value={inputText}
             onChange={e => {
               const val = e.target.value

@@ -248,7 +248,7 @@ export function getEffect(
     case 'working': {
       // Ultra-think = energy drink mode — check both statusText and task
       const text = `${statusText ?? ''} ${task ?? ''}`.toLowerCase()
-      if (text.includes('ultra') || text.includes('deep analysis') || text.includes('ultra-think')) {
+      if (text.includes('ultra') || text.includes('deep analysis') || text.includes('analisis mendalam') || text.includes('ultra-think')) {
         return pickEnergyDrink(agentId ?? 'default')
       }
       // No permanent typing bubble — only shows via status updates briefly
@@ -257,7 +257,8 @@ export function getEffect(
     case 'coffee-break': {
       // Boss gets Red Bull (handled above), water breaks get water glass
       const breakText = (statusText ?? '').toLowerCase()
-      if (breakText.includes('hydrat') || breakText.includes('h2o') || breakText.includes('water') || breakText.includes('refill')) {
+      if (breakText.includes('hydrat') || breakText.includes('h2o') || breakText.includes('water') || breakText.includes('refill') ||
+          breakText.includes('hidrasi') || breakText.includes('minum') || breakText.includes('isi ulang')) {
         return '/sprites/effects/glass-water.png'
       }
       return '/sprites/effects/need-coffee.png'
@@ -266,9 +267,9 @@ export function getEffect(
       // Event-specific effects while walking to event spots
       const walkText = (statusText ?? '').toLowerCase()
       if (walkText.includes('pizza')) return '/sprites/effects/pizza.png'
-      if (walkText.includes('birthday')) return '/sprites/effects/cake.png'
-      if (walkText.includes('fire')) return '/sprites/effects/fire.png'
-      if (walkText.includes('deploy') || walkText.includes('friday') || walkText.includes('success')) return '/sprites/effects/party.png'
+      if (walkText.includes('birthday') || walkText.includes('ulang tahun')) return '/sprites/effects/cake.png'
+      if (walkText.includes('fire') || walkText.includes('kebakaran') || walkText.includes('pemadam')) return '/sprites/effects/fire.png'
+      if (walkText.includes('deploy') || walkText.includes('friday') || walkText.includes('success') || walkText.includes('jumat') || walkText.includes('berhasil')) return '/sprites/effects/party.png'
       if (walkText.includes('standup')) return null
       return null
     }
