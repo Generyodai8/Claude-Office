@@ -28,18 +28,69 @@ const MAX_CHUNK = 4000   // batas Telegram per pesan adalah 4096 karakter
 const MAX_CHUNKS = 3     // hasil yang sangat panjang dipotong setelah 3 pesan
 const REQUEST_TIMEOUT_MS = 10_000
 
+/**
+ * Baca telegram.json dengan toleran terhadap kesalahan umum:
+ * BOM di awal file, koma berlebih sebelum "}", dan kurung kurawal luar yang
+ * terlupa (isi file hanya `"botToken": "..."`). Mengembalikan null jika tidak valid.
+ */
+function parseConfigText(raw) {
+  const text = raw.replace(/^﻿/, '').trim().replace(/,\s*([}\]])/g, '$1').replace(/,\s*$/, '')
+  for (const candidate of [text, `{${text}}`]) {
+    try {
+      const value = JSON.parse(candidate)
+      if (value && typeof value === 'object' && !Array.isArray(value)) return value
+    } catch {
+      // coba bentuk berikutnya
+    }
+  }
+  return null
+}
+
 export function loadTelegramConfig() {
   let file = {}
+  let fileProblem = ''
+  let raw = null
   try {
-    file = JSON.parse(readFileSync(CONFIG_FILE, 'utf8'))
+    raw = readFileSync(CONFIG_FILE, 'utf8')
   } catch {
-    // file belum ada atau rusak — dianggap belum dikonfigurasi
+    // file belum ada — boleh, konfigurasi bisa lewat variabel lingkungan
   }
+  if (raw !== null) {
+    const parsed = parseConfigText(raw)
+    if (parsed) file = parsed
+    else fileProblem = 'file-invalid'
+  }
+
   const botToken = String(process.env.TELEGRAM_BOT_TOKEN || file.botToken || '').trim()
   const chatId = String(process.env.TELEGRAM_CHAT_ID || file.chatId || '').trim()
   const enabled = file.enabled !== false
   const sendStarted = file.sendStarted === true
-  return { botToken, chatId, enabled, sendStarted, configured: Boolean(botToken && chatId && enabled) }
+  const configured = Boolean(botToken && chatId && enabled)
+
+  let problem = ''
+  if (!configured) {
+    if (fileProblem) problem = fileProblem
+    else if (!enabled) problem = 'disabled'
+    else if (!botToken) problem = raw === null ? 'no-file' : 'no-token'
+    else if (!chatId) problem = 'no-chat-id'
+  }
+  return { botToken, chatId, enabled, sendStarted, configured, problem }
+}
+
+/** Penjelasan masalah konfigurasi dalam bahasa Indonesia (tanpa membocorkan token). */
+export function describeTelegramProblem(problem) {
+  switch (problem) {
+    case 'file-invalid':
+      return `File ${CONFIG_FILE} tidak valid — pastikan diawali { dan diakhiri }, dan setiap baris kecuali yang terakhir diakhiri koma`
+    case 'no-token':
+      return 'botToken belum diisi di telegram.json'
+    case 'no-chat-id':
+      return 'chatId belum diisi — kirim pesan ke bot Anda, lalu jalankan: npm run telegram:chat-id'
+    case 'disabled':
+      return 'Telegram sedang dimatikan ("enabled": false di telegram.json)'
+    default:
+      return 'Telegram belum dikonfigurasi — isi botToken dan chatId di ~/.agent-office/telegram.json'
+  }
 }
 
 /** Pecah teks panjang jadi potongan ≤ size, sebisa mungkin di batas baris/spasi. */

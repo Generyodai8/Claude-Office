@@ -11,13 +11,14 @@
  * Token dibaca dari file/env dan tidak pernah dicetak.
  */
 
-import { loadTelegramConfig, CONFIG_FILE } from '../server/telegram.js'
+import { loadTelegramConfig, describeTelegramProblem, CONFIG_FILE } from '../server/telegram.js'
 
 const API_BASE = (process.env.TELEGRAM_API_BASE || 'https://api.telegram.org').replace(/\/+$/, '')
-const { botToken } = loadTelegramConfig()
+const { botToken, problem } = loadTelegramConfig()
 
 if (!botToken) {
-  console.error(`Token bot belum diisi. Buat file ${CONFIG_FILE} berisi:`)
+  if (problem === 'file-invalid') console.error(describeTelegramProblem(problem))
+  else console.error(`Token bot belum diisi. Buat file ${CONFIG_FILE} berisi:`)
   console.error('  { "botToken": "TOKEN_DARI_BOTFATHER" }')
   process.exit(1)
 }

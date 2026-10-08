@@ -19,7 +19,7 @@ import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { addMessage, getMessages, markSeen, addReaction } from './chat-db.js'
 import db from './chat-db.js'
-import { loadTelegramConfig, sendTelegram, formatAgentDone, formatAgentStarted } from './telegram.js'
+import { loadTelegramConfig, describeTelegramProblem, sendTelegram, formatAgentDone, formatAgentStarted } from './telegram.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -256,7 +256,7 @@ function handleSlashCommand(cmd) {
     case '/telegram': {
       const tg = loadTelegramConfig()
       if (!tg.configured) {
-        return '📨 Telegram belum dikonfigurasi — isi botToken dan chatId di ~/.agent-office/telegram.json lalu coba lagi'
+        return `📨 ${describeTelegramProblem(tg.problem)}`
       }
       sendTelegram('✅ Tes dari Agent Office — koneksi Telegram berhasil.').then(r => {
         const text = r.ok ? '📨 Pesan uji terkirim ke Telegram' : `📨 Gagal mengirim ke Telegram: ${r.reason}`
