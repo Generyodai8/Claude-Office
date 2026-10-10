@@ -38,9 +38,10 @@ export interface Agent {
 }
 
 export interface OfficeEvent {
-  type: 'agent_spawned' | 'agent_working' | 'agent_completed' | 'mcp_call' | 'mcp_done' | 'new_hire' | 'chat_message' | 'chat_typing' | 'chat_reaction' | 'chat_seen'
+  type: 'agent_spawned' | 'agent_working' | 'agent_completed' | 'mcp_call' | 'mcp_done' | 'new_hire' | 'chat_message' | 'chat_typing' | 'chat_reaction' | 'chat_seen' | 'agent_status'
   agent?: Partial<Agent>
   agentId?: string
+  role?: string
   status?: string
   result?: string
   sender?: string
@@ -80,5 +81,9 @@ export const AGENT_CONFIGS: Record<string, { color: string; emoji: string; title
   'gmail':                 { color: '#ea4335', emoji: '📧', title: 'Gmail' },
   'ios-simulator':         { color: '#a2aaad', emoji: '📱', title: 'iOS' },
   'assistant':             { color: '#cc785c', emoji: '🤖', title: 'Claude' },
+  // Tim tetap kantor
+  'seo-agent':             { color: '#00bfa5', emoji: '🔎', title: 'Bagas' },
+  'image-agent':           { color: '#e91e8c', emoji: '🎨', title: 'Amar' },
+  'office-agent':          { color: '#2b7cd3', emoji: '📎', title: 'Alfin' },
   'default':               { color: '#95a5a6', emoji: '👤', title: 'Worker' },
 }

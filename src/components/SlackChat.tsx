@@ -35,6 +35,8 @@ interface SlackChatProps {
   onReaction?: (messageId: number, reactions: string[]) => void
   /** For video mode: auto-type text into the input box */
   autoTypeText?: string
+  /** Isi kotak chat dari luar (mis. klik karakter). nonce berubah = isi ulang */
+  prefill?: { text: string; nonce: number }
   dayPhase: string
   /** Role/name currently typing — shows animated dots below the message list */
   typingUser?: string | null
@@ -42,11 +44,12 @@ interface SlackChatProps {
   lastSeenId?: number | null
 }
 
-const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggleMute, onVolumeChange, onSendMessage, onReaction, autoTypeText, dayPhase, typingUser, lastSeenId }) => {
+const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggleMute, onVolumeChange, onSendMessage, onReaction, autoTypeText, prefill, dayPhase, typingUser, lastSeenId }) => {
   const theme = useTheme()
   void theme // Why: subscribe so avatars re-render when /the-office toggles
   const bodyRef = useRef<HTMLDivElement>(null)
   const [inputText, setInputText] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
   const [showSlashHint, setShowSlashHint] = useState(false)
   const [emojiPickerMsgId, setEmojiPickerMsgId] = useState<number | null>(null)
   const pickerRef = useRef<HTMLDivElement>(null)
@@ -119,6 +122,12 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
     }, 50 + Math.random() * 30) // slightly random typing speed
     return () => clearInterval(interval)
   }, [autoTypeText])
+
+  useEffect(() => {
+    if (!prefill) return
+    setInputText(prefill.text)
+    inputRef.current?.focus()
+  }, [prefill?.nonce])
 
   useEffect(() => {
     if (bodyRef.current) {
@@ -249,6 +258,9 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
       <div className="slack-input-wrap">
         {showSlashHint && (
           <div className="slack-slash-hint">
+            <span className="slack-slash-cmd">/tim</span>
+            <span className="slack-slash-cmd">/otak</span>
+            <span className="slack-slash-cmd">/memori</span>
             <span className="slack-slash-cmd">/status</span>
             <span className="slack-slash-cmd">/agents</span>
             <span className="slack-slash-cmd">/telegram</span>
@@ -258,9 +270,10 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
         )}
         <div className="slack-input-bar">
           <input
+            ref={inputRef}
             type="text"
             className="slack-input-field"
-            placeholder="Kirim pesan ke #office-general"
+            placeholder="Tulis perintah… mis. @Bagas buat artikel SEO tentang kopi"
             value={inputText}
             onChange={e => {
               const val = e.target.value

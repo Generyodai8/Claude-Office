@@ -36,6 +36,12 @@ while true; do
     # Check server
     curl -sf "$SERVER/health" > /dev/null 2>&1 || continue
 
+    # Otak internal server aktif -> watcher lama tidak diperlukan (hindari balasan ganda)
+    if curl -sf "$SERVER/brain" 2>/dev/null | grep -q '"enabled":true'; then
+        echo "[chat-ai] Otak internal aktif, watcher dihentikan"
+        exit 0
+    fi
+
     # Check AI toggle
     IS_PAUSED=$(curl -sf "$SERVER/chat/cron-state" 2>/dev/null | python3 -c "import sys,json; print('true' if json.load(sys.stdin).get('paused') else 'false')" 2>/dev/null || echo "true")
     [ "$IS_PAUSED" = "true" ] && continue

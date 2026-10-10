@@ -16,6 +16,10 @@ interface CharacterProps {
   zIndex?: number
   /** Show typing indicator (about to post a Slack message) */
   isTyping?: boolean
+  /** Bila diberikan, karakter bisa diklik */
+  onClick?: (agent: Agent) => void
+  /** Tampilkan papan nama di bawah karakter */
+  showName?: boolean
 }
 
 // Movement direction → sprite variant
@@ -66,7 +70,7 @@ const OPPOSITE: Record<SpriteDirection, SpriteDirection> = {
   'rear-right': 'front-left',
 }
 
-const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex, isTyping }) => {
+const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex, isTyping, onClick, showName }) => {
   const prevPosRef = useRef({ x: agent.position.x, y: agent.position.y })
   const directionRef = useRef<SpriteDirection>(agent.spriteFacing ?? 'front-right')
   const [turnedAround, setTurnedAround] = useState(false)
@@ -147,7 +151,11 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
         <SpeechBubble key={agent.statusText} text={agent.statusText} />
       )}
 
-      <div className="char-body-group">
+      <div
+        className={`char-body-group${onClick ? ' clickable' : ''}`}
+        onClick={onClick ? () => onClick(agent) : undefined}
+        title={onClick ? `Klik untuk mengobrol dengan ${agent.name}` : undefined}
+      >
         <div className="char-shadow" />
         <img
           src={spriteSrc}
@@ -161,6 +169,11 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
           }}
           draggable={false}
         />
+        {showName && (
+          <div className={`char-nameplate${isTyping ? ' busy' : ''}`} style={{ borderColor: agent.color }}>
+            {agent.emoji && !/^[a-z]+$/i.test(agent.emoji) ? `${agent.emoji} ` : ''}{agent.name}{isTyping ? ' · bekerja…' : ''}
+          </div>
+        )}
       </div>
     </div>
   )

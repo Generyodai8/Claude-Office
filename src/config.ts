@@ -6,7 +6,7 @@
  */
 
 // Load user config (office.config.json) — bundled by Vite
-let userConfig: { boss?: { name?: string; sprite?: string; color?: string; emoji?: string } } = {}
+let userConfig: { boss?: { name?: string; sprite?: string; color?: string; emoji?: string }; team?: { onlyTeam?: boolean } } = {}
 try {
   // Vite handles JSON imports at build time
   userConfig = await import('../office.config.json')
@@ -18,6 +18,9 @@ const bossName   = userConfig.boss?.name   ?? 'Boss'
 const bossSprite = userConfig.boss?.sprite ?? 'Me-1'
 const bossColor  = userConfig.boss?.color  ?? '#ff4444'
 const bossEmoji  = userConfig.boss?.emoji  ?? '👑'
+
+// Mode "hanya tim": kantor hanya berisi Claude, Bagas, Amar, Alfin (matikan lewat office.config.json: "team": {"onlyTeam": false})
+export const TEAM_ONLY = userConfig.team?.onlyTeam !== false
 
 // The boss — always in the office
 export const BOSS_CHAR = bossSprite
@@ -45,6 +48,9 @@ export const ROLE_TO_CHAR: Record<string, string> = {
   'prompt-engineer':       'dev-2',
   'general-purpose':       'employee-3',
   'Explore':               'explore-1',
+  'seo-agent':             'Frontend-dev-1',
+  'image-agent':           'employee-1',
+  'office-agent':          'employee-2',
   'seo-writer':            'Frontend-dev-1',
   'docs-writer':           'employee-2',
   // MCPs

@@ -18,6 +18,7 @@
 import { readFileSync } from 'fs'
 import { homedir } from 'os'
 import { join } from 'path'
+import { parseLenient } from './jsonfile.js'
 
 export const CONFIG_FILE = join(homedir(), '.agent-office', 'telegram.json')
 
@@ -28,23 +29,8 @@ const MAX_CHUNK = 4000   // batas Telegram per pesan adalah 4096 karakter
 const MAX_CHUNKS = 3     // hasil yang sangat panjang dipotong setelah 3 pesan
 const REQUEST_TIMEOUT_MS = 10_000
 
-/**
- * Baca telegram.json dengan toleran terhadap kesalahan umum:
- * BOM di awal file, koma berlebih sebelum "}", dan kurung kurawal luar yang
- * terlupa (isi file hanya `"botToken": "..."`). Mengembalikan null jika tidak valid.
- */
-function parseConfigText(raw) {
-  const text = raw.replace(/^﻿/, '').trim().replace(/,\s*([}\]])/g, '$1').replace(/,\s*$/, '')
-  for (const candidate of [text, `{${text}}`]) {
-    try {
-      const value = JSON.parse(candidate)
-      if (value && typeof value === 'object' && !Array.isArray(value)) return value
-    } catch {
-      // coba bentuk berikutnya
-    }
-  }
-  return null
-}
+// Pembacaan telegram.json memakai parser toleran bersama (lihat jsonfile.js).
+const parseConfigText = parseLenient
 
 export function loadTelegramConfig() {
   let file = {}
@@ -155,6 +141,37 @@ export async function sendTelegram(text, { config = loadTelegramConfig() } = {})
     const reason = timedOut
       ? 'waktu habis saat menghubungi Telegram'
       : `tidak bisa terhubung ke Telegram${code ? ` (${code})` : ''} — cek koneksi internet`
+    return { ok: false, reason: scrub(reason, config.botToken) }
+  }
+}
+
+/**
+ * Kirim berkas ke Telegram. kind: 'photo' (gambar tampil langsung) atau 'document'.
+ * Hasilnya { ok: true } atau { ok: false, reason }; tidak pernah melempar error.
+ */
+export async function sendTelegramFile(buffer, filename, { kind = 'document', caption = '', mime = 'application/octet-stream', config = loadTelegramConfig() } = {}) {
+  if (!config.configured) return { ok: false, reason: 'not-configured' }
+  const isPhoto = kind === 'photo'
+  const form = new FormData()
+  form.append('chat_id', config.chatId)
+  if (caption) form.append('caption', String(caption).slice(0, 1000))
+  form.append(isPhoto ? 'photo' : 'document', new Blob([buffer], { type: mime }), filename)
+  try {
+    const res = await fetch(`${API_BASE}/bot${config.botToken}/${isPhoto ? 'sendPhoto' : 'sendDocument'}`, {
+      method: 'POST',
+      body: form,
+      signal: AbortSignal.timeout(60_000),
+    })
+    if (!res.ok) {
+      let description = ''
+      try { description = (await res.json()).description ?? '' } catch {}
+      return { ok: false, reason: scrub(`HTTP ${res.status}${description ? ` — ${description}` : ''}`, config.botToken) }
+    }
+    return { ok: true }
+  } catch (err) {
+    const code = err?.cause?.code || err?.cause?.errors?.[0]?.code || ''
+    const timedOut = err?.name === 'TimeoutError' || err?.name === 'AbortError'
+    const reason = timedOut ? 'waktu habis saat mengirim berkas ke Telegram' : `tidak bisa terhubung ke Telegram${code ? ` (${code})` : ''}`
     return { ok: false, reason: scrub(reason, config.botToken) }
   }
 }

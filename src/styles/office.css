@@ -330,6 +330,32 @@
 .char-body-group {
   position: relative;
 }
+.char-body-group.clickable {
+  pointer-events: auto;
+  cursor: pointer;
+}
+.char-body-group.clickable:hover .char-sprite {
+  filter: brightness(1.15);
+}
+.char-nameplate {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 2px;
+  padding: 1px 6px;
+  font: 600 10px/1.3 system-ui, sans-serif;
+  color: #fff;
+  background: rgba(20, 20, 28, 0.82);
+  border: 1px solid #888;
+  border-radius: 8px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 12;
+}
+.char-nameplate.busy {
+  background: rgba(30, 90, 50, 0.9);
+}
 
 .char-sprite {
   image-rendering: pixelated;

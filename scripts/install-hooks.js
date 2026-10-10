@@ -30,7 +30,7 @@ mkdirSync(CLAUDE_DIR, { recursive: true })
 let settings = {}
 if (existsSync(SETTINGS)) {
   const raw = readFileSync(SETTINGS, 'utf8').replace(/^﻿/, '')
-  const stamp = new Date().toISOString().replace(/[-:T]/g, '').slice(0, 14)
+  const stamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 17)
   const backup = `${SETTINGS}.backup.${stamp}`
   copyFileSync(SETTINGS, backup)
   console.log(`[ok] Cadangan: ${backup}`)

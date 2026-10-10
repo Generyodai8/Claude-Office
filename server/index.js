@@ -20,6 +20,9 @@ import { dirname } from 'path'
 import { addMessage, getMessages, markSeen, addReaction } from './chat-db.js'
 import db from './chat-db.js'
 import { loadTelegramConfig, describeTelegramProblem, sendTelegram, formatAgentDone, formatAgentStarted } from './telegram.js'
+import { loadBrainConfig, brainStatus, describeBrainProblem } from './brain.js'
+import { TEAM, loadTeamSettings } from './team.js'
+import { createCrew } from './crew.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -33,6 +36,10 @@ function sendNotification(title, msg) {
 }
 
 const PORT = 3334
+
+// Mode "hanya tim": kantor hanya menampilkan 4 agen tetap (Claude, Bagas, Amar, Alfin).
+// Agen dari hook Claude Code tetap dikirim ke Telegram, tetapi tidak digambar di kantor.
+const ONLY_TEAM = loadTeamSettings().onlyTeam
 
 // ---------------------------------------------------------------------------
 // Auth token — generated on startup, written to /tmp/agent-office-token
@@ -170,6 +177,18 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', agents: activeAgents.size, clients: wss?.clients.size ?? 0 })
 })
 
+// Status otak AI + tim (tanpa kunci API)
+app.get('/brain', (_req, res) => {
+  const tg = loadTelegramConfig()
+  res.json({
+    ...brainStatus(),
+    enabled: loadBrainConfig().configured,
+    telegram: tg.configured,
+    team: Object.values(TEAM).map(a => ({ id: a.id, name: a.name, role: a.role, title: a.title })),
+    onlyTeam: ONLY_TEAM,
+  })
+})
+
 // MCP server roster
 app.get('/roster', (_req, res) => {
   const mcpServers = discoverMcpServers()
@@ -225,7 +244,7 @@ app.post('/event', (req, res) => {
   }
 
   const event = processEvent(sanitised)
-  if (event) {
+  if (event && !ONLY_TEAM) {
     broadcast(event)
   }
 
@@ -265,8 +284,17 @@ function handleSlashCommand(cmd) {
       })
       return '📨 Mengirim pesan uji ke Telegram...'
     }
+    case '/tim':
+      return '👥 ' + Object.values(TEAM).map(a => `${a.name} — ${a.title}`).join(' • ') + ' • Sapa dengan @Bagas, @Amar, @Alfin, atau @semua'
+    case '/otak': {
+      const st = brainStatus()
+      if (!st.configured) return `🧠 Otak belum tersambung. ${describeBrainProblem(st.problem)}`
+      return `🧠 Otak aktif: ${st.provider} / ${st.model} • Generator gambar: ${st.image.configured ? `aktif (${st.image.model})` : 'belum terhubung'}`
+    }
+    case '/memori':
+      return crew.memorySummary()
     case '/help':
-      return '📋 Perintah: /status — statistik kantor, /agents — daftar agen, /clear — hapus riwayat chat, /telegram — tes koneksi Telegram, /help — pesan ini'
+      return '📋 Perintah: /tim — daftar rekan, /otak — status otak AI, /memori — apa yang diingat tim, /status, /agents, /clear — hapus riwayat chat, /telegram — tes Telegram, /help. Untuk memberi tugas, tulis biasa atau pakai @Bagas, @Amar, @Alfin.'
     default:
       return null
   }
@@ -320,6 +348,11 @@ app.post('/chat', (req, res) => {
   } catch {}
 
   console.log(`[chat] ${msg.sender}: ${msg.text}`)
+
+  // Otak internal: arahkan pesan Bos ke agen yang tepat.
+  if (!msg.is_system && typeof text === 'string') {
+    crew.handleUserMessage(clampString(text, 2000))
+  }
   res.json({ ok: true })
 })
 
@@ -479,7 +512,7 @@ function processEvent(body) {
 
       // Proactive message — announce task in chat
       const taskShort = (record.task ?? '').slice(0, 50)
-      if (taskShort) {
+      if (taskShort && !ONLY_TEAM) {
         const chatMsg = addMessage({ sender: record.name, role: record.role, text: `mulai: ${taskShort}` })
         broadcast({ type: 'chat_message', ...chatMsg })
       }
@@ -511,9 +544,11 @@ function processEvent(body) {
         setTimeout(() => activeAgents.delete(id), 10_000)
 
         // Proactive message — announce completion in chat
-        const resultShort = (body.result ?? 'selesai').slice(0, 50)
-        const chatMsg = addMessage({ sender: agent.name, role: agent.role, text: `selesai: ${resultShort}` })
-        broadcast({ type: 'chat_message', ...chatMsg })
+        if (!ONLY_TEAM) {
+          const resultShort = (body.result ?? 'selesai').slice(0, 50)
+          const chatMsg = addMessage({ sender: agent.name, role: agent.role, text: `selesai: ${resultShort}` })
+          broadcast({ type: 'chat_message', ...chatMsg })
+        }
 
         // Smart notification — alert on failure
         if (/error|fail|gagal|galat/i.test(body.result ?? '')) {
@@ -619,6 +654,13 @@ function broadcast(payload) {
 }
 
 // ---------------------------------------------------------------------------
+// Kru kantor (Claude, Bagas, Amar, Alfin)
+// ---------------------------------------------------------------------------
+
+const crew = createCrew({ broadcast, addMessage, getMessages, activeAgents })
+crew.registerResidents()
+
+// ---------------------------------------------------------------------------
 // Boot
 // ---------------------------------------------------------------------------
 
@@ -635,6 +677,10 @@ httpServer.listen(PORT, '127.0.0.1', () => {
 ╚═══════════════════════════════════════════╝`)
 
   console.log(`  Auth token written to: ${TOKEN_FILE}`)
+  const brain = brainStatus()
+  console.log(brain.configured
+    ? `  Otak agen: ${brain.provider} / ${brain.model}`
+    : `  Otak agen BELUM tersambung — ${describeBrainProblem(brain.problem)}`)
 
   if (mcpServers.length > 0) {
     console.log(`  MCP servers discovered: ${mcpServers.join(', ')}`)

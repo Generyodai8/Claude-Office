@@ -24,7 +24,7 @@ import {
   coffeeMessage,
   waterMessage,
 } from './agentManager'
-import { BOSS_ROLE, BOSS_NAME } from './config'
+import { BOSS_ROLE, BOSS_NAME, TEAM_ONLY } from './config'
 import { pickEvent } from './events'
 import { getInteraction } from './interactions'
 import {
@@ -150,6 +150,41 @@ function createClaude(): Agent {
     color: cfg.color,
     emoji: cfg.emoji,
     hiredAt: Date.now() + 500, // arrives just after the boss
+    pathQueue: computePath(entry, target),
+  }
+}
+
+// Penghuni tetap lainnya: Bagas (SEO), Amar (gambar), Alfin (Microsoft Office)
+const RESIDENTS = [
+  { id: 'resident-bagas', role: 'seo-agent',    spotId: 'spot-4', task: 'Spesialis SEO',        delay: 1000 },
+  { id: 'resident-amar',  role: 'image-agent',  spotId: 'spot-5', task: 'Pembuat foto & gambar', delay: 1500 },
+  { id: 'resident-alfin', role: 'office-agent', spotId: 'spot-3', task: 'Asisten Microsoft Office', delay: 2000 },
+]
+const RESIDENT_IDS = new Set<string>([CLAUDE_ID, ...RESIDENTS.map(r => r.id)])
+
+function createResident(r: typeof RESIDENTS[number]): Agent {
+  const cfg = AGENT_CONFIGS[r.role] ?? AGENT_CONFIGS['default']
+  const spot = MAIN_ROOM.agentSpots.find(s => s.id === r.spotId) ?? { id: r.spotId, type: 'desk' as const, x: 40, y: 60 }
+  const entry = MAIN_ROOM.entryPoint
+  const target = { x: spot.x, y: spot.y }
+  return {
+    id: r.id,
+    name: cfg.title,
+    type: 'subagent',
+    role: r.role,
+    state: 'new-hire',
+    position: { x: entry.x, y: entry.y },
+    targetPosition: target,
+    deskPosition: target,
+    room: 'main-office',
+    assignedRoom: 'main-office',
+    assignedSpotId: spot.id,
+    spriteFacing: (spot as any).spriteFacing,
+    task: r.task,
+    statusText: 'sudah masuk',
+    color: cfg.color,
+    emoji: cfg.emoji,
+    hiredAt: Date.now() + r.delay,
     pathQueue: computePath(entry, target),
   }
 }
@@ -307,10 +342,11 @@ const OFFICE_SIM_CHATTER = [
 const App: React.FC = () => {
   // All hooks must be at the top — before any conditional returns.
   const theme = useTheme() // Why: re-render rooms + agents when /the-office toggles
-  const [agents, setAgents] = useState<Agent[]>(() => [createBoss(), createClaude()])
+  const [agents, setAgents] = useState<Agent[]>(() => [createBoss(), createClaude(), ...RESIDENTS.map(createResident)])
   const agentMetaRef = useRef<Map<string, AgentMeta>>(new Map([
     [BOSS_ID, { spawnedAt: Date.now(), arrivedAtDeskAt: Date.now(), idleSince: null, onBreak: false, breakStartedAt: null }],
     [CLAUDE_ID, { spawnedAt: Date.now(), arrivedAtDeskAt: Date.now(), idleSince: null, onBreak: false, breakStartedAt: null }],
+    ...RESIDENTS.map(r => [r.id, { spawnedAt: Date.now(), arrivedAtDeskAt: Date.now(), idleSince: null, onBreak: false, breakStartedAt: null }] as [string, AgentMeta]),
   ]))
 
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -442,6 +478,29 @@ const App: React.FC = () => {
 
   // Agents currently showing typing indicator (before a Slack message)
   const [typingAgents, setTypingAgents] = useState<Set<string>>(new Set())
+
+  // Penanda "sedang mengetik/berpikir" dari server (dengan pengaman waktu)
+  const typingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+  const markTyping = useCallback((id: string, on: boolean) => {
+    const timers = typingTimersRef.current
+    const old = timers.get(id)
+    if (old) { clearTimeout(old); timers.delete(id) }
+    setTypingAgents(prev => {
+      const has = prev.has(id)
+      if (has === on) return prev
+      const next = new Set(prev)
+      if (on) next.add(id); else next.delete(id)
+      return next
+    })
+    if (on) timers.set(id, setTimeout(() => markTyping(id, false), 150_000))
+  }, [])
+
+  // Klik karakter → isi kotak chat dengan @Nama
+  const [chatPrefill, setChatPrefill] = useState<{ text: string; nonce: number } | undefined>(undefined)
+  const handleAgentClick = useCallback((agent: Agent) => {
+    if (!RESIDENT_IDS.has(agent.id)) return
+    setChatPrefill({ text: `@${agent.name} `, nonce: Date.now() })
+  }, [])
 
   // Video mode: auto-type text into the Slack input
   const [autoTypeText, setAutoTypeText] = useState<string | undefined>(undefined)
@@ -591,6 +650,13 @@ const App: React.FC = () => {
 
   const handleEvent = useCallback((event: OfficeEvent) => {
     const effects: PendingEffect[] = []
+
+    // Status kerja agen tetap dari server: berpikir / bekerja / santai
+    if (event.type === 'agent_status') {
+      const id = event.agentId
+      if (id) markTyping(id, event.status === 'thinking' || event.status === 'working')
+      return
+    }
 
     setAgents(prev => {
       switch (event.type) {
@@ -779,6 +845,7 @@ const App: React.FC = () => {
           if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
           setChatTypingUser((event as any).sender ?? '')
           typingTimeoutRef.current = setTimeout(() => setChatTypingUser(null), 10000)
+          if (event.agentId) setTimeout(() => markTyping(event.agentId as string, true), 0)
           return prev
         }
 
@@ -807,6 +874,11 @@ const App: React.FC = () => {
 
           // Clear typing indicator when Claude sends a real message
           setChatTypingUser(null)
+          {
+            const speakerRole = (event as any).role as string | undefined
+            const speaker = speakerRole ? prev.find(a => a.role === speakerRole && RESIDENT_IDS.has(a.id)) : undefined
+            if (speaker) setTimeout(() => markTyping(speaker.id, false), 0)
+          }
 
           // Skip messages from the boss — those are added locally by onSendMessage
           const bossCfg = AGENT_CONFIGS[BOSS_ROLE] ?? AGENT_CONFIGS['default']
@@ -838,7 +910,7 @@ const App: React.FC = () => {
             msgSender = cfg.title; msgRole = role; msgColor = cfg.color
           } else {
             // Attribute to a working agent or fall back to Claude
-            const workers = prev.filter(a => a.id !== BOSS_ID && a.id !== CLAUDE_ID && a.state === 'working')
+            const workers = prev.filter(a => a.id !== BOSS_ID && !RESIDENT_IDS.has(a.id) && a.state === 'working')
             if (workers.length > 0) {
               const agent = workers[Math.floor(Math.random() * workers.length)]
               const cfg = AGENT_CONFIGS[agent.role] ?? AGENT_CONFIGS['default']
@@ -874,6 +946,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (!isSimMode) return
+    if (TEAM_ONLY) return // mode tim: tidak ada agen palsu, hanya 4 karakter tetap
     const timers: ReturnType<typeof setTimeout>[] = []
     const intervals: ReturnType<typeof setInterval>[] = []
 
@@ -1540,7 +1613,7 @@ const App: React.FC = () => {
 
       // Prune completed agents at the door (never prune the boss)
       const pruned = next.filter(a => {
-        if (a.id === BOSS_ID || a.id === CLAUDE_ID) return true
+        if (a.id === BOSS_ID || RESIDENT_IDS.has(a.id)) return true
         if (a.state === 'completed') {
           const atDoor = (
             Math.abs(a.position.x - DOOR_TARGET.x) < ARRIVAL_THRESHOLD * 2 &&
@@ -1871,6 +1944,8 @@ const App: React.FC = () => {
                 idleDurationMs={idleDurationMs}
                 zIndex={zOverride}
                 isTyping={typingAgents.has(agent.id)}
+                onClick={RESIDENT_IDS.has(agent.id) ? handleAgentClick : undefined}
+                showName={TEAM_ONLY}
               />
             )
           })}
@@ -1951,6 +2026,7 @@ const App: React.FC = () => {
           }).catch(() => {})
         }}
         autoTypeText={autoTypeText}
+        prefill={chatPrefill}
         dayPhase={effectivePhase}
         typingUser={chatTypingUser}
         lastSeenId={lastSeenId}

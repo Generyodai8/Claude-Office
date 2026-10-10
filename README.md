@@ -171,6 +171,46 @@ Add the hook to `~/.claude/settings.json`:
 
 Now spawn agents in Claude Code and watch them appear in the office.
 
+## Tim Kantor: Claude, Bagas, Amar, Alfin (bisa diajak bicara & diperintah)
+
+Kantor kini berisi 4 karakter tetap yang punya "otak" sendiri (model AI), kepribadian, dan ingatan:
+
+| Karakter | Peran | Bisa dilakukan |
+|---|---|---|
+| **Claude** | Koordinator | Ngobrol, merangkum, membantu memutuskan, menyerahkan tugas ke rekan |
+| **Bagas** | Agen SEO | Riset kata kunci (dari pengetahuan model), outline, artikel SEO, meta title/description, ide topik harian |
+| **Amar** | Pembuat foto/gambar | Menyusun prompt gambar dan, bila generator gambar terhubung, membuat gambarnya |
+| **Alfin** | Microsoft Office | Membuat file **Word (.docx)**, **Excel (.xlsx, dengan rumus)**, **PowerPoint (.pptx)** sungguhan; menjelaskan rumus/fitur Office |
+
+### Langkah pemasangan (Windows / macOS / Linux)
+
+1. `npm install`
+2. `npm run setup:brain` — pilih sumber kecerdasan (API key Anthropic, layanan kompatibel OpenAI seperti Groq/OpenRouter/Gemini/Ollama, atau Claude Code di komputer). Kunci diketik di terminal, tidak tampil di layar, dan hanya disimpan di `~/.agent-office/brain.json` (Windows: `C:\Users\<nama>\.agent-office\brain.json`).
+3. `npm run dev:all`, lalu buka **http://localhost:3333/** (tanpa `?sim`, karena mode `?sim` hanya demo tanpa server).
+
+### Cara memberi perintah
+
+- Klik karakternya di kantor, atau ketik di chat: `@Bagas buat artikel SEO tentang kopi arabika`, `@Amar buatkan logo kedai kopi`, `@Alfin buat laporan anggaran bulanan dalam Excel`.
+- Tanpa @ pun bisa: pesan diarahkan otomatis lewat nama atau kata kunci (artikel → Bagas, gambar → Amar, Excel/Word/PPT → Alfin). Obrolan lain dijawab Claude. `@semua` memanggil ketiga spesialis.
+- Hasil kerja disimpan di `~/.agent-office/outputs/<tanggal>/` dan otomatis dikirim ke Telegram bila sudah terhubung.
+- Perintah chat: `/tim` (daftar rekan), `/otak` (status otak AI), `/memori` (yang diingat tim), `/status`, `/agents`, `/clear`, `/telegram`, `/help`.
+- Agen mengingat hal penting tentang Anda (preferensi, gaya tulisan, dll.) di `~/.agent-office/memory/`; hapus file di folder itu untuk melupakan.
+
+### Gambar (Amar)
+
+Pembuatan gambar butuh API key generator gambar bergaya OpenAI (model `gpt-image-1`); `npm run setup:brain` menawarkannya di akhir. Tanpa itu, Amar tetap menyusun prompt gambar yang bisa ditempel ke generator lain, dan mengatakannya terus terang.
+
+### Batasan yang jujur
+
+- Agen adalah model bahasa: terasa seperti rekan kerja dan ingat konteks, tetapi bisa keliru. Periksa hasilnya, terutama angka dan fakta.
+- Agen **tidak punya akses internet**; Bagas tidak bisa mengecek peringkat Google atau volume pencarian (bagian yang butuh data terkini ditandai `[PERLU DICEK]`).
+- Alfin membuat file baru; ia tidak bisa membuka/mengubah file di komputer Anda kecuali isinya ditempel ke chat.
+- Pemakaian API berbayar/berkuota menurut penyedia yang Anda pilih. Tiap pesan = satu panggilan model.
+
+### Mengatur tim
+
+Secara bawaan kantor hanya menampilkan 4 karakter ini (agen dari hook Claude Code tetap dikirim ke Telegram tetapi tidak digambar). Untuk kembali ke perilaku lama, tambahkan di `office.config.json`: `"team": { "onlyTeam": false }`.
+
 ## Notifikasi Telegram (hasil agen dikirim ke HP Anda)
 
 Setiap kali sub-agen selesai, hasil lengkapnya (nama agen, tugas, durasi, dan isi hasil) dikirim ke Telegram Anda. Hasil yang panjang dipecah jadi maksimal 3 pesan.
