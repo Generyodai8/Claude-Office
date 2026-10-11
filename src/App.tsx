@@ -4,9 +4,10 @@ import './styles/rooms.css'
 import SlackChat, { ChatMessage } from './components/SlackChat'
 import Character from './components/Character'
 import FurnitureRenderer from './components/FurnitureRenderer'
-import { Agent, OfficeEvent, AGENT_CONFIGS } from './types'
+import { Agent, AgentState, OfficeEvent, AGENT_CONFIGS } from './types'
+import { BossRoomBack, BossRoomFront, BossRoomSign } from './components/BossRoomDecor'
 import { getCurrentPhase, getPhaseLabel, type DayPhase } from './daylight'
-import { ROOMS } from './rooms'
+import { ROOMS, type RoomId } from './rooms'
 import { useAgentSocket } from './hooks/useAgentSocket'
 import * as sfx from './sounds'
 import {
@@ -69,6 +70,7 @@ const FILING_SPOT = MAIN_ROOM.agentSpots.find(s => s.type === 'filing') ?? null
 
 // Waypoints for the main office
 const MAIN_WAYPOINTS = MAIN_ROOM.waypoints ?? []
+const BOSS_ROOM_WAYPOINTS = ROOMS['boss-room'].waypoints ?? []
 
 /**
  * Compute a pathQueue from one position to another using the main-office
@@ -78,15 +80,48 @@ const MAIN_WAYPOINTS = MAIN_ROOM.waypoints ?? []
 function computePath(
   from: { x: number; y: number },
   to: { x: number; y: number },
+  room: RoomId = 'main-office',
 ): { x: number; y: number }[] {
-  if (MAIN_WAYPOINTS.length === 0) {
+  const waypoints = room === 'boss-room' ? BOSS_ROOM_WAYPOINTS : MAIN_WAYPOINTS
+  if (waypoints.length === 0) {
     console.warn('[pathfinding] No waypoints loaded!')
     return []
   }
-  const path = findWaypointPath(from.x, from.y, to.x, to.y, MAIN_WAYPOINTS)
-  console.log(`[pathfinding] from (${from.x.toFixed(1)},${from.y.toFixed(1)}) to (${to.x.toFixed(1)},${to.y.toFixed(1)}) → ${path.length} waypoints`, path)
-  return path
+  return findWaypointPath(from.x, from.y, to.x, to.y, waypoints)
 }
+
+/**
+ * Mulai perjalanan agen ke sebuah titik di ruangan lain (atau ruangan yang sama).
+ * Dari ruangan asal agen berjalan ke pintu, "masuk" ke ruangan tujuan lewat pintu yang sama,
+ * lalu berjalan ke titiknya. Penyelesaiannya ada di animation loop (agent.transit).
+ */
+function beginTransit(a: Agent, toRoom: RoomId, spotId: string, arriveState: AgentState): Agent {
+  const spot = ROOMS[toRoom].agentSpots.find(s => s.id === spotId)
+  if (!spot) return a
+  if (a.room === toRoom) {
+    const target = { x: spot.x, y: spot.y }
+    return {
+      ...a,
+      state: 'walking-to-desk',
+      targetPosition: target,
+      pathQueue: computePath(a.position, target, a.room),
+      transit: { toRoom, spotId, stage: 'inside', arriveState },
+      statusText: '',
+    }
+  }
+  const door = ROOMS[a.room].entryPoint
+  return {
+    ...a,
+    state: 'walking-to-desk',
+    targetPosition: { ...door },
+    pathQueue: computePath(a.position, door, a.room),
+    transit: { toRoom, spotId, stage: 'to-door', arriveState },
+    statusText: '',
+  }
+}
+
+/** Agen yang boleh ikut kegiatan acak di kantor utama (istirahat, latihan kebakaran, dll.). */
+const canWander = (a: Agent) => a.room === 'main-office' && !a.transit && a.state !== 'in-meeting'
 
 // Roles that go to the filing cabinet instead of their desk (browsing codebase)
 const FILING_ROLES = new Set(['Explore', 'general-purpose'])
@@ -382,6 +417,10 @@ const App: React.FC = () => {
     if (now - lastUsed < interaction.cooldown) return
     interactionCooldowns.current.set(itemId, now)
 
+    // Bos hanya bisa berinteraksi dengan perabot saat berada di kantor utama
+    const bossNow = agentsRef.current.find(a => a.id === BOSS_ID)
+    if (!bossNow || !canWander(bossNow)) return
+
     // Walk boss to the item
     const target = interaction.walkTo
     setAgents(prev => prev.map(a => {
@@ -478,6 +517,9 @@ const App: React.FC = () => {
 
   // Agents currently showing typing indicator (before a Slack message)
   const [typingAgents, setTypingAgents] = useState<Set<string>>(new Set())
+
+  // Ruangan yang sedang ditampilkan (?room=boss untuk langsung membuka Ruang Bos)
+  const [viewRoom, setViewRoom] = useState<RoomId>(() => (params.get('room') === 'boss' ? 'boss-room' : 'main-office'))
 
   // Penanda "sedang mengetik/berpikir" dari server (dengan pengaman waktu)
   const typingTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
@@ -650,6 +692,32 @@ const App: React.FC = () => {
 
   const handleEvent = useCallback((event: OfficeEvent) => {
     const effects: PendingEffect[] = []
+
+    // Perintah Bos dari server: rapat (semua berkumpul), panggil satu agen, atau bubar
+    if (event.type === 'office_command') {
+      const ids = event.agentIds ?? []
+      const seats = event.seats ?? {}
+      if (event.action === 'summon') {
+        const bossSpot = event.mode === 'meeting' ? 'meet-boss' : 'boss-desk'
+        setAgents(prev => prev.map(a => {
+          if (a.id === BOSS_ID) return beginTransit(a, 'boss-room', bossSpot, 'in-meeting')
+          if (ids.includes(a.id)) return beginTransit(a, 'boss-room', seats[a.id] ?? 'visitor-1', 'in-meeting')
+          return a
+        }))
+        setViewRoom('boss-room')
+        if (!sfx.isMuted()) sfx.playNotification()
+      } else if (event.action === 'dismiss') {
+        const bossToo = event.includeBoss === true
+        setAgents(prev => prev.map(a => {
+          const goHome = (ids.includes(a.id) || (bossToo && a.id === BOSS_ID)) && a.room === 'boss-room'
+          const mid = (ids.includes(a.id) || (bossToo && a.id === BOSS_ID)) && a.transit?.toRoom === 'boss-room'
+          if (!goHome && !mid) return a
+          return beginTransit({ ...a, transit: undefined }, 'main-office', a.assignedSpotId ?? 'spot-1', 'working')
+        }))
+        if (bossToo) setTimeout(() => setViewRoom('main-office'), 5000)
+      }
+      return
+    }
 
     // Status kerja agen tetap dari server: berpikir / bekerja / santai
     if (event.type === 'agent_status') {
@@ -922,6 +990,11 @@ const App: React.FC = () => {
           }
           // Use setTimeout to escape the setAgents updater before calling addMsg
           setTimeout(() => addMsg(msgSender, msgRole, msgColor, text), 0)
+          // Saat rapat/dipanggil: tampilkan ucapan sebagai gelembung di atas kepala agen
+          if (prev.some(a => a.role === msgRole && a.state === 'in-meeting')) {
+            const short = text.length > 70 ? `${text.slice(0, 67)}…` : text
+            return prev.map(a => (a.role === msgRole && a.state === 'in-meeting') ? { ...a, statusText: short } : a)
+          }
           return prev
         }
 
@@ -1496,7 +1569,47 @@ const App: React.FC = () => {
               Math.abs(agent.targetPosition.y - DOOR_TARGET.y) < ARRIVAL_THRESHOLD
             )
 
-            if (agent.state === 'new-hire' || agent.state === 'walking-to-desk') {
+            if (agent.transit) {
+              const tr = agent.transit
+              const destRoom = ROOMS[tr.toRoom]
+              const destSpot = destRoom.agentSpots.find(sp => sp.id === tr.spotId)
+              if (tr.stage === 'to-door' && destSpot) {
+                // Melewati pintu: muncul di ruangan tujuan, lalu berjalan ke titiknya
+                const entry = { ...destRoom.entryPoint }
+                const target = { x: destSpot.x, y: destSpot.y }
+                updated = {
+                  ...agent,
+                  room: tr.toRoom,
+                  position: entry,
+                  targetPosition: target,
+                  pathQueue: computePath(entry, target, tr.toRoom),
+                  transit: { ...tr, stage: 'inside' },
+                }
+                changed = true
+                if (!sfx.isMuted()) sfx.playDoorOpen()
+              } else {
+                // Tiba di tujuan
+                meta.arrivedAtDeskAt = tr.toRoom === 'main-office' ? nowMs : null
+                meta.onBreak = false
+                updated = {
+                  ...agent,
+                  position,
+                  transit: undefined,
+                  state: tr.arriveState,
+                  spriteFacing: destSpot?.spriteFacing ?? agent.spriteFacing,
+                  statusText: tr.arriveState === 'working' ? workMessage() : '',
+                  assignedRoom: agent.assignedRoom,
+                }
+                changed = true
+                if (tr.toRoom === 'boss-room') {
+                  fetch('http://127.0.0.1:3334/office/arrived', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ agentId: agent.id }),
+                  }).catch(() => {})
+                }
+              }
+            } else if (agent.state === 'new-hire' || agent.state === 'walking-to-desk') {
               if (isAtDesk || agent.state === 'new-hire') {
                 meta.arrivedAtDeskAt = nowMs
                 meta.onBreak = false
@@ -1572,6 +1685,7 @@ const App: React.FC = () => {
         // Random break trigger
         if (
           updated.state === 'working' &&
+          canWander(updated) &&
           meta.arrivedAtDeskAt !== null &&
           !meta.onBreak &&
           COFFEE_SPOT !== null
@@ -1685,7 +1799,7 @@ const App: React.FC = () => {
       const messages = event.agentMessages ?? []
       const currentAgents = agentsRef.current
       // Build list of participating agents (include boss)
-      const participants = currentAgents.filter(a => a.id === BOSS_ID || a.state === 'working' || a.state === 'coffee-break')
+      const participants = currentAgents.filter(a => canWander(a) && (a.id === BOSS_ID || a.state === 'working' || a.state === 'coffee-break'))
 
       // Pick ONE random agent message (not a wall of spam)
       if (messages.length > 0) {
@@ -1704,7 +1818,7 @@ const App: React.FC = () => {
         const target = EVENT_TARGETS[event.id] ?? { x: 67.5, y: 48.9 }
 
         // Move all agents (including boss) to target
-        setAgents(prev => prev.map(a => ({
+        setAgents(prev => prev.map(a => !canWander(a) ? a : ({
           ...a,
           state: 'walking-to-desk' as const,
           targetPosition: { ...target },
@@ -1714,7 +1828,7 @@ const App: React.FC = () => {
 
         // After duration, send agents back to their desks
         setTimeout(() => {
-          setAgents(prev => prev.map(a => ({
+          setAgents(prev => prev.map(a => !canWander(a) ? a : ({
             ...a,
             state: 'walking-to-desk' as const,
             targetPosition: { ...a.deskPosition },
@@ -1726,7 +1840,7 @@ const App: React.FC = () => {
       } else if (event.type === 'single-agent') {
         const target = EVENT_TARGETS[event.id] ?? { x: 83.8, y: 63 }
         // Pick a random non-boss working agent
-        const workers = agentsRef.current.filter(a => a.id !== BOSS_ID && (a.state === 'working' || a.state === 'walking-to-desk'))
+        const workers = agentsRef.current.filter(a => a.id !== BOSS_ID && canWander(a) && (a.state === 'working' || a.state === 'walking-to-desk'))
         if (workers.length > 0) {
           const chosen = workers[Math.floor(Math.random() * workers.length)]
 
@@ -1883,7 +1997,7 @@ const App: React.FC = () => {
       <div className="app-body">
       <div className="office-view">
         <div
-          className={`room-container${flickering ? ' flickering' : ''}`}
+          className={`room-container${flickering ? ' flickering' : ''}${viewRoom === 'boss-room' ? ' boss-view' : ''}`}
           style={{
             aspectRatio: '4800/3584',
             width: '100%',
@@ -1906,8 +2020,23 @@ const App: React.FC = () => {
             }}
           />
 
+          {/* Tab ruangan */}
+          <div className="room-tabs">
+            <button className={`room-tab${viewRoom === 'main-office' ? ' active' : ''}`} onClick={() => setViewRoom('main-office')}>
+              🏢 Kantor
+            </button>
+            <button className={`room-tab${viewRoom === 'boss-room' ? ' active' : ''}`} onClick={() => setViewRoom('boss-room')}>
+              👔 Ruang Bos
+              {agents.filter(a => a.id !== BOSS_ID && a.room === 'boss-room').length > 0 && (
+                <span className="room-tab-count">{agents.filter(a => a.id !== BOSS_ID && a.room === 'boss-room').length}</span>
+              )}
+            </button>
+          </div>
+
+          {viewRoom === 'boss-room' && (<><BossRoomBack /><BossRoomFront /><BossRoomSign /></>)}
+
           {/* Furniture — apply interactive state overrides */}
-          <FurnitureRenderer onItemClick={handleFurnitureClick} items={MAIN_ROOM.furniture.map(item => {
+          <FurnitureRenderer onItemClick={handleFurnitureClick} items={viewRoom !== 'main-office' ? [] : MAIN_ROOM.furniture.map(item => {
             const stateOverride = furnitureStates[item.id]
             if (!stateOverride) return item
             // Swap sprite based on state
@@ -1924,11 +2053,14 @@ const App: React.FC = () => {
           })} />
 
           {/* Agents */}
-          {agents.map(agent => {
+          {agents.filter(a => a.room === viewRoom).map(agent => {
             // Use spot zIndex override when agent is at their desk
-            const spot = MAIN_ROOM.agentSpots.find(s => s.id === agent.assignedSpotId)
-            const atDesk = Math.abs(agent.position.x - agent.deskPosition.x) < 1 &&
-                           Math.abs(agent.position.y - agent.deskPosition.y) < 1
+            const spot = agent.room === 'main-office'
+              ? MAIN_ROOM.agentSpots.find(s => s.id === agent.assignedSpotId)
+              : ROOMS[agent.room].agentSpots.find(s => Math.abs(agent.position.x - s.x) < 1 && Math.abs(agent.position.y - s.y) < 1)
+            const atDesk = agent.room === 'main-office'
+              ? Math.abs(agent.position.x - agent.deskPosition.x) < 1 && Math.abs(agent.position.y - agent.deskPosition.y) < 1
+              : !!spot
             const zOverride = atDesk && spot?.zIndex ? spot.zIndex : undefined
 
             const meta = agentMetaRef.current.get(agent.id)

@@ -238,7 +238,7 @@ CARA BEKERJA
 - Ingat hal penting tentang ${boss} dan pekerjaannya (preferensi, gaya tulisan, nama bisnis, keputusan) lewat <ingat>; jangan mencatat hal remeh atau rahasia seperti kata sandi.
 - ${notes.join(' ')}
 
-${ctx.memory ? `YANG KAMU INGAT\n${ctx.memory}\n\n` : ''}SEKARANG: ${when}
+${ctx.memory ? `YANG KAMU INGAT\n${ctx.memory}\n\n` : ''}SEKARANG: ${when}${ctx.situation ? `\n${ctx.situation}` : ''}
 
 FORMAT JAWABAN (wajib — dibaca oleh program, bukan hanya manusia)
 <chat>pesan singkat untuk ${boss}; inilah yang tampil di layar chat kantor</chat>
@@ -312,4 +312,71 @@ export function parseAgentReply(raw) {
     .filter(s => TEAM[s.to])
     .slice(0, 2)
   return out
+}
+
+// ---------------------------------------------------------------------------
+// Perintah kantor: rapat, panggil ke ruangan Bos, bubar
+// ---------------------------------------------------------------------------
+
+const NAME_RE = /\b(bagas|amar|alfin|claude)\b/g
+
+function namesIn(lower) {
+  const out = []
+  for (const m of lower.matchAll(NAME_RE)) if (!out.includes(m[1])) out.push(m[1])
+  return out
+}
+
+function topicFrom(raw) {
+  const m = raw.match(/(?:tentang|soal|mengenai|membahas|bahas|topik|agenda)\s*[:\-]?\s*(.+)$/i) || raw.match(/:\s*(.+)$/)
+  return m ? m[1].trim().replace(/[.!]+$/, '').slice(0, 200) : ''
+}
+
+/**
+ * Kenali perintah kantor dari pesan Bos. Mengembalikan null bila bukan perintah.
+ *   { type: 'meeting', topic }
+ *   { type: 'call', targets: [key...] }
+ *   { type: 'dismiss', targets: [key...] }   // targets kosong = bubarkan semua
+ */
+export function parseOfficeCommand(text) {
+  const raw = String(text ?? '').trim()
+  if (!raw) return null
+  const lower = raw.toLowerCase().replace(/\s+/g, ' ')
+  const names = namesIn(lower)
+  const all = /\b(semua|semuanya|kalian|tim|team|agen|agent)\b/.test(lower)
+
+  // perintah garis miring
+  let m
+  if ((m = lower.match(/^\/rapat\b\s*(.*)$/))) return { type: 'meeting', topic: raw.slice(6).trim().slice(0, 200) }
+  if ((m = lower.match(/^\/panggil\b\s*(.*)$/))) {
+    const t = namesIn(m[1])
+    return t.length ? { type: 'call', targets: t.slice(0, 2) } : null
+  }
+  if (/^\/(bubar|selesai)\b/.test(lower)) return { type: 'dismiss', targets: [] }
+  if (lower.startsWith('/')) return null
+
+  // bubar / kembali ke meja
+  const dismissRe = /\b(bubar|bubarkan|rapat (sudah )?(selesai|usai)|meeting (sudah )?(selesai|usai)|selesai rapat|rapat ditutup|silakan kembali|silahkan kembali|boleh kembali|kembali ke (meja|kantor|tempat)|kembalilah ke)\b/
+  if (dismissRe.test(lower)) {
+    if (names.length && !/\b(semua|semuanya|kalian|tim)\b/.test(lower)) return { type: 'dismiss', targets: names.slice(0, 3) }
+    return { type: 'dismiss', targets: [] }
+  }
+
+  // panggil satu per satu ke ruangan Bos
+  const callVerb = /\b(panggil|suruh|undang|minta)\b/.test(lower)
+  if (names.length && /\b(panggil|undang)\b/.test(lower)) return { type: 'call', targets: names.slice(0, 2) }
+  const comeCue = /\b(ke ruang(an)?( saya| bos| kerja)?|ke kantor saya|menghadap|kemari|ke sini|masuk ke ruang)/.test(lower)
+  if (names.length && ((callVerb && /\b(ke|masuk|menghadap|kemari|ke sini|datang)\b/.test(lower)) || (comeCue && !/\b(buat|tulis|bikin|carikan)\b/.test(lower)))) {
+    return { type: 'call', targets: names.slice(0, 2) }
+  }
+  if (callVerb && names.length && /\bruang/.test(lower)) return { type: 'call', targets: names.slice(0, 2) }
+
+  // rapat: perlu isyarat ajakan agar kalimat seperti "buatkan notulen rapat" tidak ikut terpicu
+  const meetWord = /\b(rapat|meeting|briefing|standup|stand-up|berkumpul|kumpul|kumpulkan|ngumpul)\b/
+  if (meetWord.test(lower)) {
+    const starts = /^(ayo |mari |tolong |segera |yuk |oke |ok )?(kita )?(rapat|meeting|briefing|standup|berkumpul|kumpul|kumpulkan|ngumpul)\b/.test(lower)
+    const invite = /\b(ayo|mari|yuk|segera)\b/.test(lower) && (all || /\bkita\b/.test(lower))
+    const callAll = all && /\b(rapat|meeting|briefing|berkumpul|kumpul|kumpulkan)\b/.test(lower) && !/\b(buat|tulis|bikin|susun|notulen|laporan|jadwal|undangan|ringkas)\b/.test(lower)
+    if (starts || invite || callAll) return { type: 'meeting', topic: topicFrom(raw) }
+  }
+  return null
 }

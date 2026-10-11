@@ -59,7 +59,7 @@ function getAnimState(state: AgentState): string {
 
 // Speech bubble only shown briefly when statusText changes (like posting to Slack)
 function shouldShowBubble(state: AgentState): boolean {
-  return state === 'talking-to-manager'
+  return state === 'talking-to-manager' || state === 'in-meeting'
 }
 
 // Opposite direction for random "looking around"
@@ -148,7 +148,7 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
       {effectSrc && <EffectBubble src={effectSrc} alt={agent.state} />}
 
       {shouldShowBubble(agent.state) && agent.statusText && (
-        <SpeechBubble key={agent.statusText} text={agent.statusText} />
+        <SpeechBubble key={agent.statusText} text={agent.statusText} duration={agent.state === 'in-meeting' ? 6000 : 3000} />
       )}
 
       <div

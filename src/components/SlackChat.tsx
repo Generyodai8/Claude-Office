@@ -258,6 +258,9 @@ const SlackChat: React.FC<SlackChatProps> = ({ messages, muted, volume, onToggle
       <div className="slack-input-wrap">
         {showSlashHint && (
           <div className="slack-slash-hint">
+            <span className="slack-slash-cmd">/rapat</span>
+            <span className="slack-slash-cmd">/panggil</span>
+            <span className="slack-slash-cmd">/bubar</span>
             <span className="slack-slash-cmd">/tim</span>
             <span className="slack-slash-cmd">/otak</span>
             <span className="slack-slash-cmd">/memori</span>

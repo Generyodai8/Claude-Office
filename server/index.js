@@ -177,6 +177,13 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', agents: activeAgents.size, clients: wss?.clients.size ?? 0 })
 })
 
+// Tampilan kantor memberi tahu bahwa seorang agen sudah tiba di ruang Bos
+app.post('/office/arrived', (req, res) => {
+  const { agentId } = req.body ?? {}
+  if (typeof agentId === 'string') crew.noteArrival(agentId.slice(0, 80))
+  res.json({ ok: true })
+})
+
 // Status otak AI + tim (tanpa kunci API)
 app.get('/brain', (_req, res) => {
   const tg = loadTelegramConfig()
@@ -294,7 +301,7 @@ function handleSlashCommand(cmd) {
     case '/memori':
       return crew.memorySummary()
     case '/help':
-      return '📋 Perintah: /tim — daftar rekan, /otak — status otak AI, /memori — apa yang diingat tim, /status, /agents, /clear — hapus riwayat chat, /telegram — tes Telegram, /help. Untuk memberi tugas, tulis biasa atau pakai @Bagas, @Amar, @Alfin.'
+      return '📋 Perintah: /tim — daftar rekan, /otak — status otak AI, /memori — apa yang diingat tim, /status, /agents, /clear — hapus riwayat chat, /telegram — tes Telegram, /help. Untuk memberi tugas, tulis biasa atau pakai @Bagas, @Amar, @Alfin. Ruang Bos: "rapat" / "/rapat topik" (semua berkumpul), "panggil Bagas ke ruangan saya" (satu per satu), "bubar" (kembali ke meja).'
     default:
       return null
   }
@@ -626,6 +633,7 @@ wss.on('connection', (ws, req) => {
     timestamp: Date.now(),
   }
   ws.send(JSON.stringify(snapshot))
+  for (const ev of crew.replayRoomState()) ws.send(JSON.stringify(ev))
 
   ws.on('close', () => {
     console.log(`[ws] Client disconnected (remaining: ${wss.clients.size})`)
@@ -657,7 +665,7 @@ function broadcast(payload) {
 // Kru kantor (Claude, Bagas, Amar, Alfin)
 // ---------------------------------------------------------------------------
 
-const crew = createCrew({ broadcast, addMessage, getMessages, activeAgents })
+const crew = createCrew({ broadcast, addMessage, getMessages, activeAgents, viewerCount: () => wss?.clients?.size ?? 0 })
 crew.registerResidents()
 
 // ---------------------------------------------------------------------------

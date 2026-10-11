@@ -10,6 +10,7 @@ export type AgentState =
   | 'completed'
   | 'new-hire'
   | 'changing-room'
+  | 'in-meeting'
 
 export interface Position {
   x: number
@@ -35,13 +36,27 @@ export interface Agent {
   emoji: string
   hiredAt: number
   pathQueue?: { x: number; y: number }[]  // waypoints to walk through
+  /** Perjalanan antar ruangan (dipanggil Bos / rapat / kembali ke meja) */
+  transit?: {
+    toRoom: RoomId
+    spotId: string
+    stage: 'to-door' | 'inside'
+    /** state setelah tiba di tujuan */
+    arriveState: AgentState
+  }
 }
 
 export interface OfficeEvent {
-  type: 'agent_spawned' | 'agent_working' | 'agent_completed' | 'mcp_call' | 'mcp_done' | 'new_hire' | 'chat_message' | 'chat_typing' | 'chat_reaction' | 'chat_seen' | 'agent_status'
+  type: 'agent_spawned' | 'agent_working' | 'agent_completed' | 'mcp_call' | 'mcp_done' | 'new_hire' | 'chat_message' | 'chat_typing' | 'chat_reaction' | 'chat_seen' | 'agent_status' | 'office_command'
   agent?: Partial<Agent>
   agentId?: string
   role?: string
+  action?: 'summon' | 'dismiss'
+  agentIds?: string[]
+  includeBoss?: boolean
+  mode?: 'meeting' | 'call'
+  seats?: Record<string, string>
+  topic?: string
   status?: string
   result?: string
   sender?: string

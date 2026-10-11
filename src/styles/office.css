@@ -1248,3 +1248,67 @@
   pointer-events: none;
   z-index: 3;
 }
+
+/* ===== Ruang Bos Naufal ===== */
+.room-container { container-type: inline-size; }
+.room-container.boss-view .room-background {
+  filter: sepia(0.38) saturate(1.25) hue-rotate(-14deg) brightness(0.98);
+}
+.boss-decor {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.boss-decor-back  { z-index: 5; }
+.boss-decor-front { z-index: 35; }
+.boss-door-sign {
+  position: absolute;
+  left: 69.1%;
+  top: 29.2%;
+  transform: translate(-50%, -50%);
+  width: 7%;
+  padding: 0.25% 0;
+  text-align: center;
+  font: 700 1.05cqw/1.2 system-ui, sans-serif;
+  letter-spacing: 0.05em;
+  color: #ffe9a8;
+  background: #5a1f2a;
+  border: 1px solid #d9b36c;
+  border-radius: 2px;
+  z-index: 6;
+  pointer-events: none;
+}
+
+/* Tab pilihan ruangan */
+.room-tabs {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 6px;
+  z-index: 200;
+}
+.room-tab {
+  font: 600 12px/1 system-ui, sans-serif;
+  padding: 6px 10px;
+  color: #cfd3dc;
+  background: rgba(20, 22, 30, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  cursor: pointer;
+}
+.room-tab.active {
+  color: #fff;
+  background: rgba(70, 90, 160, 0.9);
+  border-color: rgba(160, 180, 255, 0.7);
+}
+.room-tab .room-tab-count {
+  margin-left: 6px;
+  padding: 1px 5px;
+  font-size: 10px;
+  background: #cc785c;
+  color: #fff;
+  border-radius: 8px;
+}

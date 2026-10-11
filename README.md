@@ -196,6 +196,18 @@ Kantor kini berisi 4 karakter tetap yang punya "otak" sendiri (model AI), keprib
 - Perintah chat: `/tim` (daftar rekan), `/otak` (status otak AI), `/memori` (yang diingat tim), `/status`, `/agents`, `/clear`, `/telegram`, `/help`.
 - Agen mengingat hal penting tentang Anda (preferensi, gaya tulisan, dll.) di `~/.agent-office/memory/`; hapus file di folder itu untuk melupakan.
 
+### Ruang Bos: rapat dan memanggil agen
+
+Di atas gambar kantor ada dua tab: **🏢 Kantor** dan **👔 Ruang Bos**. Ruang Bos adalah ruangan pribadi Bos dengan meja kerja, karpet, dan meja rapat. Tampilan otomatis pindah ke Ruang Bos saat Anda memberi perintah di bawah ini, dan agen berjalan sungguhan lewat pintu kantor.
+
+| Perintah (ketik di chat) | Yang terjadi |
+|---|---|
+| `rapat`, `ayo rapat tentang artikel kopi minggu ini`, `/rapat evaluasi bulan ini` | Bos dan keempat agen berkumpul di meja rapat. Claude membuka, Bagas, Amar, dan Alfin berbicara bergiliran sesuai bidangnya (muncul sebagai gelembung ucapan dan di chat), lalu Claude menyimpulkan. **Notulen** disimpan dan dikirim ke Telegram. |
+| `panggil Bagas ke ruangan saya`, `/panggil Amar` | Agen itu masuk ke Ruang Bos, menyapa, dan siap menerima instruksi (ketik biasa atau `@Nama ...`). Memanggil agen lain berikutnya otomatis mempersilakan tamu sebelumnya kembali (satu per satu). Bisa dua orang sekaligus: `panggil Alfin dan Amar`. |
+| `bubar`, `rapat selesai`, `Bagas silakan kembali ke meja` | Semua (atau agen yang disebut) kembali ke mejanya di kantor. Bila Bos diam 10 menit, agen kembali sendiri. |
+
+Catatan: satu rapat memakai sekitar 5 panggilan model (kuota API Anda). Perintah ini hanya bekerja bila halaman kantor terbuka di browser (agen menunggu sampai benar-benar tiba sebelum berbicara).
+
 ### Gambar (Amar)
 
 Pembuatan gambar butuh API key generator gambar bergaya OpenAI (model `gpt-image-1`); `npm run setup:brain` menawarkannya di akhir. Tanpa itu, Amar tetap menyusun prompt gambar yang bisa ditempel ke generator lain, dan mengatakannya terus terang.

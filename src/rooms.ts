@@ -4,6 +4,7 @@
 
 export type RoomId =
   | 'main-office'
+  | 'boss-room'
   | 'manager-office'
   | 'ceo-office'
   | 'meeting-room'
@@ -72,6 +73,63 @@ export interface Room {
   ambience?: string   // ambient sound loop
   waypoints?: Waypoint[]  // named walkable nodes for pathfinding
 }
+
+
+// ===== RUANG BOS NAUFAL =====
+// Memakai cangkang ruangan yang sama dengan kantor utama (pintu di posisi yang sama),
+// sehingga koordinat dihitung dari sistem sumbu isometrik lantai:
+//   P(u, v) = B + u*L + v*R     (u: ke kiri-depan, v: ke kanan-depan, 0..1)
+const ISO_B = { x: 43.3, y: 35.2 }   // sudut belakang lantai
+const ISO_L = { x: -40.0, y: 28.4 }  // sepanjang dinding jendela
+const ISO_R = { x: 52.1, y: 29.0 }   // sepanjang dinding pintu
+
+export function bossIso(u: number, v: number): { x: number; y: number } {
+  return {
+    x: Math.round((ISO_B.x + u * ISO_L.x + v * ISO_R.x) * 10) / 10,
+    y: Math.round((ISO_B.y + u * ISO_L.y + v * ISO_R.y) * 10) / 10,
+  }
+}
+
+const BOSS_DOOR = { x: 67.5, y: 48.9 }
+const BU = bossIso
+
+function spot(id: string, type: AgentSpot['type'], u: number, v: number, spriteFacing: SpriteFacing, zIndex?: number): AgentSpot {
+  const p = BU(u, v)
+  return { id, type, x: p.x, y: p.y, spriteFacing, ...(zIndex ? { zIndex } : {}) }
+}
+
+export const BOSS_ROOM_SPOTS: AgentSpot[] = [
+  spot('boss-desk',  'desk',         0.14, 0.26, 'front-right', 30),
+  spot('visitor-1',  'standing',     0.42, 0.20, 'rear-right'),
+  spot('visitor-2',  'standing',     0.42, 0.34, 'rear-right'),
+  spot('meet-boss',  'meeting-seat', 0.64, 0.42, 'rear-left'),
+  spot('meet-1',     'meeting-seat', 0.46, 0.64, 'front-left',  40),
+  spot('meet-2',     'meeting-seat', 0.64, 0.88, 'front-right', 40),
+  spot('meet-3',     'meeting-seat', 0.86, 0.64, 'rear-left'),
+  spot('meet-4',     'meeting-seat', 0.86, 0.80, 'rear-right'),
+]
+
+function wp(id: string, u: number, v: number, connections: string[]): Waypoint {
+  const p = BU(u, v)
+  return { id, x: p.x, y: p.y, connections }
+}
+
+const BOSS_WAYPOINTS: Waypoint[] = [
+  { id: 'B-door', x: BOSS_DOOR.x, y: BOSS_DOOR.y, connections: ['B-in'] },
+  wp('B-in', 0.18, 0.46, ['B-door', 'B-desk', 'B-v1', 'B-a']),
+  wp('B-desk', 0.14, 0.26, ['B-in']),
+  wp('B-v1', 0.42, 0.27, ['B-in', 'B-visit']),
+  wp('B-visit', 0.42, 0.20, ['B-v1']),
+  wp('B-a', 0.40, 0.46, ['B-in', 'B-b', 'B-boss']),
+  wp('B-boss', 0.64, 0.42, ['B-a', 'B-b']),
+  wp('B-b', 0.46, 0.64, ['B-a', 'B-boss', 'B-c', 'B-m1']),
+  wp('B-m1', 0.46, 0.64, ['B-b']),
+  wp('B-c', 0.60, 0.88, ['B-b', 'B-d', 'B-m2']),
+  wp('B-m2', 0.64, 0.88, ['B-c']),
+  wp('B-d', 0.86, 0.72, ['B-c', 'B-boss', 'B-m3', 'B-m4']),
+  wp('B-m3', 0.86, 0.64, ['B-d']),
+  wp('B-m4', 0.86, 0.80, ['B-d']),
+]
 
 // ===== ROOM DEFINITIONS =====
 
@@ -280,6 +338,25 @@ export const ROOMS: Record<RoomId, Room> = {
       { id: 'ceo-spot', type: 'desk', x: 50, y: 45, facing: 'down' },
     ],
     entryPoint: { x: 50, y: 90 },
+  },
+
+  'boss-room': {
+    id: 'boss-room',
+    name: 'Ruang Bos',
+    description: 'Ruang pribadi Bos — tempat memanggil agen satu per satu dan rapat tim.',
+    background: {
+      day: '/rooms/office-day.png',
+      night: '/rooms/office-night.png',
+    },
+    width: 800,
+    height: 600,
+    furniture: [],
+    connections: [
+      { toRoom: 'main-office', position: BOSS_DOOR, label: 'Kantor Utama' },
+    ],
+    agentSpots: BOSS_ROOM_SPOTS,
+    entryPoint: BOSS_DOOR,
+    waypoints: BOSS_WAYPOINTS,
   },
 
   'meeting-room': {
