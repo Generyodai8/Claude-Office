@@ -1312,3 +1312,9 @@
   color: #fff;
   border-radius: 8px;
 }
+
+/* ===== Duduk di kursi (Ruang Bos): badan turun, kaki tersembunyi di balik kursi/meja ===== */
+.char-body-group.seated { transform: translateY(7px); }
+.char-body-group.seated .char-sprite { clip-path: inset(0 0 27% 0); }
+.char-body-group.seated .char-shadow { display: none; }
+.char-body-group.seated .char-nameplate { top: -2px; left: 50%; transform: translate(-50%, -100%); margin: 0; }

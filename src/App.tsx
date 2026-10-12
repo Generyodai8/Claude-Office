@@ -5,7 +5,7 @@ import SlackChat, { ChatMessage } from './components/SlackChat'
 import Character from './components/Character'
 import FurnitureRenderer from './components/FurnitureRenderer'
 import { Agent, AgentState, OfficeEvent, AGENT_CONFIGS } from './types'
-import { BossRoomBack, BossRoomFront, BossRoomSign } from './components/BossRoomDecor'
+import { BossRoomBack, BossRoomFront, BossRoomSign, BossRoomDeskChair, BossRoomFrontChairs } from './components/BossRoomDecor'
 import { getCurrentPhase, getPhaseLabel, type DayPhase } from './daylight'
 import { ROOMS, type RoomId } from './rooms'
 import { useAgentSocket } from './hooks/useAgentSocket'
@@ -2034,7 +2034,7 @@ const App: React.FC = () => {
             </button>
           </div>
 
-          {viewRoom === 'boss-room' && (<><BossRoomBack /><BossRoomFront /><BossRoomSign /></>)}
+          {viewRoom === 'boss-room' && (<><BossRoomBack /><BossRoomDeskChair /><BossRoomFront /><BossRoomFrontChairs /><BossRoomSign /></>)}
 
           {/* Furniture — apply interactive state overrides */}
           <FurnitureRenderer onItemClick={handleFurnitureClick} items={viewRoom !== 'main-office' ? [] : MAIN_ROOM.furniture.map(item => {
@@ -2076,6 +2076,7 @@ const App: React.FC = () => {
                 agent={agent}
                 idleDurationMs={idleDurationMs}
                 zIndex={zOverride}
+                seated={agent.room === 'boss-room' && (spot?.type === 'meeting-seat' || spot?.type === 'desk') && agent.state !== 'walking-to-desk' && agent.state !== 'walking-to-manager'}
                 isTyping={typingAgents.has(agent.id)}
                 onClick={RESIDENT_IDS.has(agent.id) ? handleAgentClick : undefined}
                 showName={TEAM_ONLY}

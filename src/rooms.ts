@@ -99,14 +99,14 @@ function spot(id: string, type: AgentSpot['type'], u: number, v: number, spriteF
 }
 
 export const BOSS_ROOM_SPOTS: AgentSpot[] = [
-  spot('boss-desk',  'desk',         0.14, 0.26, 'front-right', 30),
+  spot('boss-desk',  'desk',         0.14, 0.26, 'front-right',  30),
   spot('visitor-1',  'standing',     0.42, 0.20, 'rear-right'),
   spot('visitor-2',  'standing',     0.42, 0.34, 'rear-right'),
-  spot('meet-boss',  'meeting-seat', 0.64, 0.42, 'rear-left'),
-  spot('meet-1',     'meeting-seat', 0.46, 0.64, 'front-left',  40),
-  spot('meet-2',     'meeting-seat', 0.64, 0.88, 'front-right', 40),
-  spot('meet-3',     'meeting-seat', 0.86, 0.64, 'rear-left'),
-  spot('meet-4',     'meeting-seat', 0.86, 0.80, 'rear-right'),
+  spot('meet-boss',  'meeting-seat', 0.64, 0.42, 'front-left',   30),
+  spot('meet-1',     'meeting-seat', 0.46, 0.64, 'front-right',  30),
+  spot('meet-2',     'meeting-seat', 0.64, 0.88, 'rear-right', 40),
+  spot('meet-3',     'meeting-seat', 0.86, 0.64, 'rear-left',  40),
+  spot('meet-4',     'meeting-seat', 0.86, 0.80, 'rear-left',  40),
 ]
 
 function wp(id: string, u: number, v: number, connections: string[]): Waypoint {

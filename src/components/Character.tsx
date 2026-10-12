@@ -20,6 +20,8 @@ interface CharacterProps {
   onClick?: (agent: Agent) => void
   /** Tampilkan papan nama di bawah karakter */
   showName?: boolean
+  /** Duduk di kursi: badan diturunkan dan kaki disembunyikan (kursi/meja menutupinya) */
+  seated?: boolean
 }
 
 // Movement direction → sprite variant
@@ -70,7 +72,7 @@ const OPPOSITE: Record<SpriteDirection, SpriteDirection> = {
   'rear-right': 'front-left',
 }
 
-const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex, isTyping, onClick, showName }) => {
+const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex, isTyping, onClick, showName, seated }) => {
   const prevPosRef = useRef({ x: agent.position.x, y: agent.position.y })
   const directionRef = useRef<SpriteDirection>(agent.spriteFacing ?? 'front-right')
   const [turnedAround, setTurnedAround] = useState(false)
@@ -152,7 +154,7 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
       )}
 
       <div
-        className={`char-body-group${onClick ? ' clickable' : ''}`}
+        className={`char-body-group${onClick ? ' clickable' : ''}${seated ? ' seated' : ''}`}
         onClick={onClick ? () => onClick(agent) : undefined}
         title={onClick ? `Klik untuk mengobrol dengan ${agent.name}` : undefined}
       >
