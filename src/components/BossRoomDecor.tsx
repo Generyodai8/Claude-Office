@@ -1,5 +1,6 @@
 import React from 'react'
 import { bossIso } from '../rooms'
+import { BOSS_TABLE, BOSS_CHAIRS, BossSprite } from '../bossSprites'
 
 /**
  * Dekorasi Ruang Bos Naufal: meja Bos dengan monitor lengkung, kursi kulit, meja rapat panjang
@@ -65,53 +66,33 @@ const Plant: React.FC<{ u: number; v: number; size?: number }> = ({ u, v, size =
 
 type Back = 'u-' | 'u+' | 'v-' | 'v+'
 
+/** Sprite pixel-art (dibuat oleh scripts/gen-boss-sprites.py) — diperbesar tanpa blur. */
+const SpriteImg: React.FC<{ s: BossSprite; dx?: number; dy?: number }> = ({ s, dx = 0, dy = 0 }) => (
+  <image
+    href={s.src}
+    x={s.x + dx}
+    y={s.y + dy}
+    width={s.w}
+    height={s.h}
+    preserveAspectRatio="none"
+    style={{ imageRendering: 'pixelated' }}
+  />
+)
+
+const CHAIR_KEY: Record<Back, string> = { 'v-': 'chairVMinus', 'u-': 'chairUMinus', 'v+': 'chairVPlus', 'u+': 'chairUPlus' }
+
 /**
- * Kursi putar. (u, v) = titik duduk agen; sandaran berada di sisi `back` (menjauhi meja).
- * Sandaran di sisi jauh dari penonton (u-, v-) digambar sebelum dudukan, sisi dekat (u+, v+) sesudahnya.
+ * Kursi putar pixel-art. (u, v) = titik duduk agen; sandaran di sisi `back` (menjauhi meja).
+ * part 'rear' = kaki + sandaran sisi jauh (di belakang agen), 'seat' = dudukan (menutupi paha),
+ * 'all' = seluruh kursi (untuk kursi di sisi dekat penonton). leather = kursi kulit Bos.
  */
-const Chair: React.FC<{ u: number; v: number; back: Back; seat?: string; shade?: string; dark?: string; tall?: number; part?: 'all' | 'rear' | 'seat' }> = ({
-  u, v, back, seat = '#6f7480', shade = '#545964', dark = '#2b2e35', tall = 7.4, part = 'all',
+const Chair: React.FC<{ u: number; v: number; back: Back; part?: 'all' | 'rear' | 'seat'; leather?: boolean }> = ({
+  u, v, back, part = 'all', leather = false,
 }) => {
-  const su = 0.034, sv = 0.04          // setengah ukuran dudukan
-  const t = 0.012                       // tebal sandaran
-  const zSeat = 2.2
-  const base = pt(u, v)
-
-  let bu0 = u - su, bu1 = u + su, bv0 = v - sv, bv1 = v + sv
-  if (back === 'u-') { bu0 = u - su - t; bu1 = u - su }
-  if (back === 'u+') { bu0 = u + su; bu1 = u + su + t }
-  if (back === 'v-') { bv0 = v - sv - t; bv1 = v - sv }
-  if (back === 'v+') { bv0 = v + sv; bv1 = v + sv + t }
-
-  const backrest = <Box u0={bu0} u1={bu1} v0={bv0} v1={bv1} z={zSeat} h={tall} top={seat} left={shade} right={shade} />
-  const farBack = back === 'u-' || back === 'v-'
-
-  const seatBox = <Box u0={u - su} u1={u + su} v0={v - sv} v1={v + sv} z={zSeat - 1.0} h={zSeat} top={seat} left={shade} right={dark} />
-  const legs = (
-    <g>
-      <ellipse cx={base.x} cy={base.y} rx={2.6} ry={0.9} fill="rgba(0,0,0,0.28)" />
-      {/* kaki bintang + tiang */}
-      <g stroke={dark} strokeWidth={0.5} strokeLinecap="round">
-        <line x1={base.x - 2.1} y1={base.y + 0.1} x2={base.x + 2.1} y2={base.y - 0.1} />
-        <line x1={base.x - 1.2} y1={base.y - 0.6} x2={base.x + 1.2} y2={base.y + 0.6} />
-        <line x1={base.x} y1={base.y} x2={base.x} y2={base.y - zSeat} strokeWidth={0.7} />
-      </g>
-    </g>
-  )
-
-  // part 'rear'  = bagian di belakang agen (kaki, sandaran sisi jauh)
-  // part 'seat'  = bagian di depan agen (dudukan menutupi paha, sandaran sisi dekat)
-  // part 'all'   = seluruh kursi di satu lapisan
-  if (part === 'rear') return <g>{legs}{farBack && backrest}</g>
-  if (part === 'seat') return <g>{seatBox}{!farBack && backrest}</g>
-  return (
-    <g>
-      {legs}
-      {farBack && backrest}
-      {seatBox}
-      {!farBack && backrest}
-    </g>
-  )
+  const sprite = BOSS_CHAIRS[leather ? 'deskChair' : CHAIR_KEY[back]]?.[part]
+  if (!sprite) return null
+  const o = pt(u, v), z = pt(0, 0)
+  return <SpriteImg s={sprite} dx={o.x - z.x} dy={o.y - z.y} />
 }
 
 /** Papan datar menempel di dinding pintu (u = 0), dari v0..v1, ketinggian h0..h1. */
@@ -278,28 +259,10 @@ export const BossRoomFront: React.FC = () => {
       {/* dudukan kursi sisi jauh (menutupi paha agen yang duduk) */}
       <Chair u={0.64} v={0.405} back="v-" part="seat" />
       <Chair u={0.455} v={0.64} back="u-" part="seat" />
-      <Chair u={0.135} v={0.26} back="u-" part="seat" seat="#7c4a2c" shade="#5b3520" dark="#1f1a17" tall={9.4} />
+      <Chair u={0.135} v={0.26} back="u-" part="seat" leather />
 
-      {/* ===== meja rapat panjang ===== */}
-      <Box u0={0.585} u1={0.745} v0={0.53} v1={0.79} h={2.1} top="#2c1c12" left="#2c1c12" right="#24160e" />
-      <Box u0={0.54} u1={0.79} v0={0.47} v1={0.85} z={2.1} h={2.9} top="#8a5634" left="#6a4028" right="#54321e" />
-      {/* perlengkapan di atas meja */}
-      <Flat u={0.60} v={0.57} du={0.028} dv={0.032} z={2.9} fill="#eceae1" />
-      <Flat u={0.60} v={0.74} du={0.028} dv={0.032} z={2.9} fill="#eceae1" />
-      <Flat u={0.725} v={0.57} du={0.028} dv={0.032} z={2.9} fill="#eceae1" />
-      <Flat u={0.725} v={0.77} du={0.03} dv={0.034} z={2.9} fill="#c9c2b0" />
-      <Flat u={0.66} v={0.62} du={0.03} dv={0.03} z={2.9} fill="#3b4a63" />
-      <Box u0={0.655} u1={0.69} v0={0.66} v1={0.73} z={2.9} h={4.2} top="#c9a15c" left="#b2453a" right="#2f6fa8" />
-      {(() => {
-        const c = up(pt(0.67, 0.78), 2.9)
-        return (
-          <g>
-            <rect x={c.x - 0.6} y={c.y - 1.5} width={1.2} height={1.5} fill="#2a2d33" stroke={EDGE} strokeWidth={0.08} />
-            <line x1={c.x - 0.3} y1={c.y - 1.5} x2={c.x - 0.5} y2={c.y - 3} stroke="#c9423a" strokeWidth={0.2} />
-            <line x1={c.x + 0.1} y1={c.y - 1.5} x2={c.x + 0.2} y2={c.y - 3.2} stroke="#2f6fa8" strokeWidth={0.2} />
-          </g>
-        )
-      })()}
+      {/* meja rapat panjang (sprite pixel-art, lengkap dengan kertas, buku, laptop, kopi) */}
+      <SpriteImg s={BOSS_TABLE} />
 
       {/* meja kerja Bos: papan atas + laci + panel samping */}
       <Box u0={0.19} u1={0.30} v0={0.34} v1={0.42} h={dz} top="#3d281a" left="#2f1f14" right="#26180f" />
@@ -376,7 +339,7 @@ export const BossRoomFront: React.FC = () => {
 /** Kursi kulit di belakang meja Bos (lapisan belakang karakter, di bawah Bos yang duduk). */
 export const BossRoomDeskChair: React.FC = () => (
   <svg className="boss-decor boss-decor-back" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 6 }}>
-    <Chair u={0.135} v={0.26} back="u-" part="rear" seat="#7c4a2c" shade="#5b3520" dark="#1f1a17" tall={9.4} />
+    <Chair u={0.135} v={0.26} back="u-" part="rear" leather />
   </svg>
 )
 
@@ -384,8 +347,8 @@ export const BossRoomDeskChair: React.FC = () => (
 export const BossRoomFrontChairs: React.FC = () => (
   <svg className="boss-decor boss-decor-front" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 41 }}>
     <Chair u={0.64} v={0.895} back="v+" />              {/* meet-2 */}
-    <Chair u={0.855} v={0.64} back="u+" tall={6.2} />   {/* meet-3 */}
-    <Chair u={0.855} v={0.80} back="u+" tall={6.2} />   {/* meet-4 */}
+    <Chair u={0.855} v={0.64} back="u+" />   {/* meet-3 */}
+    <Chair u={0.855} v={0.80} back="u+" />   {/* meet-4 */}
   </svg>
 )
 
