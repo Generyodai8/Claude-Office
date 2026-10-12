@@ -6,7 +6,7 @@
  */
 
 // Load user config (office.config.json) — bundled by Vite
-let userConfig: { boss?: { name?: string; sprite?: string; color?: string; emoji?: string }; team?: { onlyTeam?: boolean } } = {}
+let userConfig: { boss?: { name?: string; sprite?: string; color?: string; emoji?: string }; team?: { onlyTeam?: boolean; autoChatter?: boolean } } = {}
 try {
   // Vite handles JSON imports at build time
   userConfig = await import('../office.config.json')
@@ -21,6 +21,10 @@ const bossEmoji  = userConfig.boss?.emoji  ?? '👑'
 
 // Mode "hanya tim": kantor hanya berisi Claude, Bagas, Amar, Alfin (matikan lewat office.config.json: "team": {"onlyTeam": false})
 export const TEAM_ONLY = userConfig.team?.onlyTeam !== false
+
+// Obrolan & kejadian otomatis (simulasi latihan kebakaran, pizza, "ngopi dulu", dll). Default MATI agar chat hanya berisi
+// percakapan nyata. Aktifkan lewat office.config.json: "team": {"autoChatter": true}
+export const AUTO_CHATTER = userConfig.team?.autoChatter === true
 
 // The boss — always in the office
 export const BOSS_CHAR = bossSprite

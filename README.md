@@ -370,3 +370,8 @@ npm run build:electron  # Build .dmg
 ## License
 
 MIT
+
+## Obrolan santai & tanpa topik otomatis
+
+- Keempat agen (Claude, Bagas, Amar, Alfin) punya gaya bicara sendiri: santai, menyimak suasana hati Bos, boleh bercanda dan bertanya balik, dan mengingat hal personal yang Bos ceritakan (lewat memori).
+- Kejadian acak (latihan kebakaran, pizza, "ngopi dulu", dll.) dan obrolan skrip **dimatikan secara default**, jadi chat hanya berisi percakapan nyata. Untuk menyalakannya lagi, isi `office.config.json`: `"team": { "onlyTeam": true, "autoChatter": true }`.

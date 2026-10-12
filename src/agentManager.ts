@@ -26,6 +26,7 @@
 
 import { Agent, AgentState, Position } from './types'
 import { AgentSpot, Waypoint } from './rooms'
+import { TEAM_ONLY, AUTO_CHATTER } from './config'
 import { themedSpawn, themedWork, themedDone, themedCoffee, themedWater, getOfficePropForRole } from './theme'
 
 // ---------------------------------------------------------------------------
@@ -341,11 +342,13 @@ const WATER_MESSAGES = [
 // Why: route through theme module so Office mode swaps chatter automatically.
 // Fallback pool kept for reference but theme module carries default strings too.
 void SPAWN_MESSAGES; void WORK_MESSAGES; void DONE_MESSAGES; void COFFEE_MESSAGES; void WATER_MESSAGES
-export function spawnMessage(): string  { return themedSpawn() }
-export function workMessage(): string   { return themedWork() }
-export function doneMessage(): string   { return themedDone() }
-export function coffeeMessage(): string { return themedCoffee() }
-export function waterMessage(): string  { return themedWater() }
+// Mode tim tanpa obrolan otomatis: status singkat dan jelas, bukan candaan acak.
+const QUIET = TEAM_ONLY && !AUTO_CHATTER
+export function spawnMessage(): string  { return QUIET ? 'siap bekerja' : themedSpawn() }
+export function workMessage(): string   { return QUIET ? 'sedang bekerja' : themedWork() }
+export function doneMessage(): string   { return QUIET ? 'selesai' : themedDone() }
+export function coffeeMessage(): string { return QUIET ? 'istirahat sebentar' : themedCoffee() }
+export function waterMessage(): string  { return QUIET ? 'minum dulu' : themedWater() }
 
 // ---------------------------------------------------------------------------
 // Break scheduling

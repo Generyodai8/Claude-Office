@@ -25,7 +25,7 @@ import {
   coffeeMessage,
   waterMessage,
 } from './agentManager'
-import { BOSS_ROLE, BOSS_NAME, TEAM_ONLY } from './config'
+import { BOSS_ROLE, BOSS_NAME, TEAM_ONLY, AUTO_CHATTER } from './config'
 import { pickEvent } from './events'
 import { getInteraction } from './interactions'
 import {
@@ -978,7 +978,7 @@ const App: React.FC = () => {
             msgSender = cfg.title; msgRole = role; msgColor = cfg.color
           } else {
             // Attribute to a working agent or fall back to Claude
-            const workers = prev.filter(a => a.id !== BOSS_ID && !RESIDENT_IDS.has(a.id) && a.state === 'working')
+            const workers = TEAM_ONLY ? [] : prev.filter(a => a.id !== BOSS_ID && !RESIDENT_IDS.has(a.id) && a.state === 'working')
             if (workers.length > 0) {
               const agent = workers[Math.floor(Math.random() * workers.length)]
               const cfg = AGENT_CONFIGS[agent.role] ?? AGENT_CONFIGS['default']
@@ -1704,9 +1704,9 @@ const App: React.FC = () => {
 
               const cfg = AGENT_CONFIGS[updated.role] ?? AGENT_CONFIGS['default']
               const isBoss = updated.id === BOSS_ID
-              const breakMsg = useWater ? waterMessage() : (isBoss ? 'ambil Red Bull dulu' : coffeeMessage())
+              const breakMsg = useWater ? waterMessage() : (isBoss && (!TEAM_ONLY || AUTO_CHATTER) ? 'ambil Red Bull dulu' : coffeeMessage())
               const breakIcon = isBoss ? '🥫' : (useWater ? '💧' : '☕')
-              addMsg(updated.name, updated.role, cfg.color, `${breakIcon} ${breakMsg}`)
+              if (!TEAM_ONLY || AUTO_CHATTER) addMsg(updated.name, updated.role, cfg.color, `${breakIcon} ${breakMsg}`)
               if (!sfx.isMuted()) sfx.playCoffee()
 
               const breakTarget = { x: breakSpot.x, y: breakSpot.y }
@@ -1894,6 +1894,7 @@ const App: React.FC = () => {
       }, delay)
     }
 
+    if (TEAM_ONLY && !AUTO_CHATTER) return // tanpa kejadian acak: chat hanya berisi percakapan nyata
     let timerRef = scheduleNext()
     return () => clearTimeout(timerRef)
   // eslint-disable-next-line react-hooks/exhaustive-deps
