@@ -1,6 +1,6 @@
 import React from 'react'
 import { bossIso } from '../rooms'
-import { BOSS_CHAIRS, BOSS_MEETING_SET, BOSS_MEETING_TABLE_FRONT, BossSprite } from '../bossSprites'
+import { BOSS_CHAIRS, BOSS_MEETING_TABLE, BossSprite } from '../bossSprites'
 
 /**
  * Dekorasi Ruang Bos Naufal: meja Bos dengan monitor lengkung, kursi kulit, meja rapat panjang
@@ -221,8 +221,9 @@ export const BossRoomBack: React.FC = () => {
         )
       })()}
 
-      {/* meja rapat + 5 kursi (dipotong dari gambar contoh), duduknya agen ada di BOSS_ROOM_SPOTS */}
-      <SpriteImg s={BOSS_MEETING_SET} />
+      {/* kursi abu-abu sisi jauh: kaki + sandaran di belakang agen (dudukannya di lapisan depan) */}
+      <Chair u={0.805} v={0.57} back="v-" part="rear" />   {/* meet-1 */}
+      <Chair u={0.626} v={0.57} back="v-" part="rear" />   {/* meet-2 */}
 
       {/* tanaman */}
       <Plant u={0.94} v={0.06} />
@@ -255,8 +256,10 @@ export const BossRoomFront: React.FC = () => {
       {/* kursi kulit Bos (sandaran di belakang Bos, sisi jauh) */}
       {/* — digambar di lapisan belakang melalui desk-chair di bawah — */}
 
-      {/* salinan meja: menutupi paha agen di sisi jauh */}
-      <SpriteImg s={BOSS_MEETING_TABLE_FRONT} />
+      {/* dudukan kursi sisi jauh, lalu meja (menutupi paha agen yang duduk di sisi jauh) */}
+      <Chair u={0.805} v={0.57} back="v-" part="seat" />
+      <Chair u={0.626} v={0.57} back="v-" part="seat" />
+      <SpriteImg s={BOSS_MEETING_TABLE} />
       <Chair u={0.135} v={0.26} back="u-" part="seat" leather />
 
       {/* meja kerja Bos: papan atas + laci + panel samping */}
@@ -341,6 +344,10 @@ export const BossRoomDeskChair: React.FC = () => (
 /** Kursi sisi dekat penonton (sandaran menutupi punggung bawah agen yang duduk). */
 export const BossRoomFrontChairs: React.FC = () => (
   <svg className="boss-decor boss-decor-front" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 41 }}>
+    <Chair u={0.97} v={0.564} back="u+" />     {/* meet-boss (ujung meja) */}
+    <Chair u={0.973} v={0.901} back="v+" />    {/* meet-3 */}
+    <Chair u={0.725} v={0.883} back="v+" />    {/* meet-4 */}
+  
   </svg>
 )
 

@@ -103,7 +103,7 @@ export const BOSS_ROOM_SPOTS: AgentSpot[] = [
   spot('visitor-1',  'standing',     0.42, 0.20, 'rear-right'),
   spot('visitor-2',  'standing',     0.42, 0.34, 'rear-right'),
   // 5 kursi pada gambar meja rapat (BOSS_MEETING_SET): ujung kiri, dua di sisi jauh, dua di sisi dekat
-  spot('meet-boss',  'meeting-seat', 0.97, 0.564, 'rear-left',   30),
+  spot('meet-boss',  'meeting-seat', 0.97, 0.564, 'rear-left',   40),
   spot('meet-1',     'meeting-seat', 0.805, 0.57, 'front-left',  30),
   spot('meet-2',     'meeting-seat', 0.626, 0.57, 'front-left',  30),
   spot('meet-3',     'meeting-seat', 0.973, 0.901, 'rear-right', 40),
