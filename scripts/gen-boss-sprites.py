@@ -159,7 +159,7 @@ def make_table():
 
 
 # --------------------------------------------------------------------- kursi
-def chair_parts(back, style, name_prefix, parts):
+def chair_parts(back, style, name_prefix, parts, tall_override=None):
     """
     Kursi putar pixel-art. back = sisi sandaran ('u-', 'u+', 'v-', 'v+').
     parts = daftar dari 'rear', 'seat', 'all'. Mengembalikan dict nama -> manifest.
@@ -174,6 +174,8 @@ def chair_parts(back, style, name_prefix, parts):
     su, sv = (0.040, 0.046) if big else (0.034, 0.040)
     zS = 2.4 if not big else 2.6
     tall = 8.2 if not big else 10.8
+    if tall_override:
+        tall = tall_override
     t = 0.014
 
     res = {}
@@ -260,13 +262,15 @@ def main():
     specs = [
         ('chairVMinus', 'v-', 'grey', ['rear', 'seat']),     # kepala meja (meet-boss)
         ('chairUMinus', 'u-', 'grey', ['rear', 'seat']),     # meet-1
-        ('chairVPlus',  'v+', 'grey', ['all']),              # meet-2
-        ('chairUPlus',  'u+', 'grey', ['all']),              # meet-3 / meet-4
+        ('chairVPlus',  'v+', 'grey', ['all'], 6.2),         # sisi dekat: sandaran dipendekkan agar agen terlihat
+        ('chairUPlus',  'u+', 'grey', ['all'], 6.2),         # ujung meja
         ('deskChair',   'u-', 'leather', ['rear', 'seat']),  # kursi kulit Bos
     ]
-    for key, back, style, parts in specs:
+    for spec in specs:
+        key, back, style, parts = spec[:4]
+        tall = spec[4] if len(spec) > 4 else None
         prefix = f'chair-{key}'
-        manifest[key] = chair_parts(back, style, prefix, parts)
+        manifest[key] = chair_parts(back, style, prefix, parts, tall)
 
     # tulis manifest TypeScript. Posisi kursi relatif terhadap titik duduk (0,0) -> ditambahkan offset (u, v) saat dipakai.
     ts = [

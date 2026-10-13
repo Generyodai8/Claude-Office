@@ -1,6 +1,7 @@
 import React from 'react'
 import { bossIso } from '../rooms'
-import { BOSS_CHAIRS, BOSS_MEETING_TABLE, BossSprite } from '../bossSprites'
+import { BOSS_CHAIRS, BossSprite } from '../bossSprites'
+import { BOSS_MEETING_TABLE } from '../bossMeeting'
 
 /**
  * Dekorasi Ruang Bos Naufal: meja Bos dengan monitor lengkung, kursi kulit, meja rapat panjang
@@ -222,8 +223,8 @@ export const BossRoomBack: React.FC = () => {
       })()}
 
       {/* kursi abu-abu sisi jauh: kaki + sandaran di belakang agen (dudukannya di lapisan depan) */}
-      <Chair u={0.805} v={0.57} back="v-" part="rear" />   {/* meet-1 */}
-      <Chair u={0.626} v={0.57} back="v-" part="rear" />   {/* meet-2 */}
+      <Chair u={0.805} v={0.505} back="v-" part="rear" />   {/* meet-1 */}
+      <Chair u={0.626} v={0.505} back="v-" part="rear" />   {/* meet-2 */}
 
       {/* tanaman */}
       <Plant u={0.94} v={0.06} />
@@ -257,8 +258,8 @@ export const BossRoomFront: React.FC = () => {
       {/* — digambar di lapisan belakang melalui desk-chair di bawah — */}
 
       {/* dudukan kursi sisi jauh, lalu meja (menutupi paha agen yang duduk di sisi jauh) */}
-      <Chair u={0.805} v={0.57} back="v-" part="seat" />
-      <Chair u={0.626} v={0.57} back="v-" part="seat" />
+      <Chair u={0.805} v={0.505} back="v-" part="seat" />
+      <Chair u={0.626} v={0.505} back="v-" part="seat" />
       <SpriteImg s={BOSS_MEETING_TABLE} />
       <Chair u={0.135} v={0.26} back="u-" part="seat" leather />
 
