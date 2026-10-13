@@ -99,14 +99,15 @@ function spot(id: string, type: AgentSpot['type'], u: number, v: number, spriteF
 }
 
 export const BOSS_ROOM_SPOTS: AgentSpot[] = [
-  spot('boss-desk',  'desk',         0.14, 0.26, 'front-right',  30),
+  spot('boss-desk',  'desk',         0.14, 0.26, 'front-right', 30),
   spot('visitor-1',  'standing',     0.42, 0.20, 'rear-right'),
   spot('visitor-2',  'standing',     0.42, 0.34, 'rear-right'),
-  spot('meet-boss',  'meeting-seat', 0.64, 0.42, 'front-left',   30),
-  spot('meet-1',     'meeting-seat', 0.46, 0.64, 'front-right',  30),
-  spot('meet-2',     'meeting-seat', 0.64, 0.88, 'rear-right', 40),
-  spot('meet-3',     'meeting-seat', 0.86, 0.64, 'rear-left',  40),
-  spot('meet-4',     'meeting-seat', 0.86, 0.80, 'rear-left',  40),
+  // 5 kursi pada gambar meja rapat (BOSS_MEETING_SET): ujung kiri, dua di sisi jauh, dua di sisi dekat
+  spot('meet-boss',  'meeting-seat', 0.97, 0.564, 'rear-left',   30),
+  spot('meet-1',     'meeting-seat', 0.805, 0.57, 'front-left',  30),
+  spot('meet-2',     'meeting-seat', 0.626, 0.57, 'front-left',  30),
+  spot('meet-3',     'meeting-seat', 0.973, 0.901, 'rear-right', 40),
+  spot('meet-4',     'meeting-seat', 0.725, 0.883, 'rear-right', 40),
 ]
 
 function wp(id: string, u: number, v: number, connections: string[]): Waypoint {
@@ -120,15 +121,17 @@ const BOSS_WAYPOINTS: Waypoint[] = [
   wp('B-desk', 0.14, 0.26, ['B-in']),
   wp('B-v1', 0.42, 0.27, ['B-in', 'B-visit']),
   wp('B-visit', 0.42, 0.20, ['B-v1']),
-  wp('B-a', 0.40, 0.46, ['B-in', 'B-b', 'B-boss']),
-  wp('B-boss', 0.64, 0.42, ['B-a', 'B-b']),
-  wp('B-b', 0.46, 0.64, ['B-a', 'B-boss', 'B-c', 'B-m1']),
-  wp('B-m1', 0.46, 0.64, ['B-b']),
-  wp('B-c', 0.60, 0.88, ['B-b', 'B-d', 'B-m2']),
-  wp('B-m2', 0.64, 0.88, ['B-c']),
-  wp('B-d', 0.86, 0.72, ['B-c', 'B-boss', 'B-m3', 'B-m4']),
-  wp('B-m3', 0.86, 0.64, ['B-d']),
-  wp('B-m4', 0.86, 0.80, ['B-d']),
+  wp('B-a', 0.40, 0.44, ['B-in', 'B-f1']),
+  wp('B-f1', 0.626, 0.44, ['B-a', 'B-f2', 'B-m2']),
+  wp('B-m2', 0.626, 0.57, ['B-f1']),
+  wp('B-f2', 0.805, 0.44, ['B-f1', 'B-f3', 'B-m1']),
+  wp('B-m1', 0.805, 0.57, ['B-f2']),
+  wp('B-f3', 0.96, 0.46, ['B-f2', 'B-mA', 'B-n1']),
+  wp('B-mA', 0.97, 0.564, ['B-f3']),
+  wp('B-n1', 0.985, 0.76, ['B-f3', 'B-m3', 'B-n2']),
+  wp('B-m3', 0.973, 0.901, ['B-n1']),
+  wp('B-n2', 0.78, 0.80, ['B-n1', 'B-m4']),
+  wp('B-m4', 0.725, 0.883, ['B-n2']),
 ]
 
 // ===== ROOM DEFINITIONS =====

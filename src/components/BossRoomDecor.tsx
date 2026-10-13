@@ -1,6 +1,6 @@
 import React from 'react'
 import { bossIso } from '../rooms'
-import { BOSS_TABLE, BOSS_CHAIRS, BossSprite } from '../bossSprites'
+import { BOSS_CHAIRS, BOSS_MEETING_SET, BOSS_MEETING_TABLE_FRONT, BossSprite } from '../bossSprites'
 
 /**
  * Dekorasi Ruang Bos Naufal: meja Bos dengan monitor lengkung, kursi kulit, meja rapat panjang
@@ -221,9 +221,8 @@ export const BossRoomBack: React.FC = () => {
         )
       })()}
 
-      {/* kursi sisi jauh: kaki + sandaran di belakang agen (dudukannya digambar di lapisan depan) */}
-      <Chair u={0.64} v={0.405} back="v-" part="rear" />   {/* meet-boss */}
-      <Chair u={0.455} v={0.64} back="u-" part="rear" />   {/* meet-1 */}
+      {/* meja rapat + 5 kursi (dipotong dari gambar contoh), duduknya agen ada di BOSS_ROOM_SPOTS */}
+      <SpriteImg s={BOSS_MEETING_SET} />
 
       {/* tanaman */}
       <Plant u={0.94} v={0.06} />
@@ -256,13 +255,9 @@ export const BossRoomFront: React.FC = () => {
       {/* kursi kulit Bos (sandaran di belakang Bos, sisi jauh) */}
       {/* — digambar di lapisan belakang melalui desk-chair di bawah — */}
 
-      {/* dudukan kursi sisi jauh (menutupi paha agen yang duduk) */}
-      <Chair u={0.64} v={0.405} back="v-" part="seat" />
-      <Chair u={0.455} v={0.64} back="u-" part="seat" />
+      {/* salinan meja: menutupi paha agen di sisi jauh */}
+      <SpriteImg s={BOSS_MEETING_TABLE_FRONT} />
       <Chair u={0.135} v={0.26} back="u-" part="seat" leather />
-
-      {/* meja rapat panjang (sprite pixel-art, lengkap dengan kertas, buku, laptop, kopi) */}
-      <SpriteImg s={BOSS_TABLE} />
 
       {/* meja kerja Bos: papan atas + laci + panel samping */}
       <Box u0={0.19} u1={0.30} v0={0.34} v1={0.42} h={dz} top="#3d281a" left="#2f1f14" right="#26180f" />
@@ -346,9 +341,6 @@ export const BossRoomDeskChair: React.FC = () => (
 /** Kursi sisi dekat penonton (sandaran menutupi punggung bawah agen yang duduk). */
 export const BossRoomFrontChairs: React.FC = () => (
   <svg className="boss-decor boss-decor-front" viewBox="0 0 100 100" preserveAspectRatio="none" style={{ zIndex: 41 }}>
-    <Chair u={0.64} v={0.895} back="v+" />              {/* meet-2 */}
-    <Chair u={0.855} v={0.64} back="u+" />   {/* meet-3 */}
-    <Chair u={0.855} v={0.80} back="u+" />   {/* meet-4 */}
   </svg>
 )
 
