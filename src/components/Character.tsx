@@ -20,8 +20,6 @@ interface CharacterProps {
   onClick?: (agent: Agent) => void
   /** Tampilkan papan nama di bawah karakter */
   showName?: boolean
-  /** Duduk di kursi: badan diturunkan dan kaki disembunyikan (kursi/meja menutupinya) */
-  seated?: boolean
 }
 
 // Movement direction → sprite variant
@@ -72,7 +70,7 @@ const OPPOSITE: Record<SpriteDirection, SpriteDirection> = {
   'rear-right': 'front-left',
 }
 
-const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex, isTyping, onClick, showName, seated }) => {
+const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex, isTyping, onClick, showName }) => {
   const prevPosRef = useRef({ x: agent.position.x, y: agent.position.y })
   const directionRef = useRef<SpriteDirection>(agent.spriteFacing ?? 'front-right')
   const [turnedAround, setTurnedAround] = useState(false)
@@ -130,10 +128,7 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
   const animState = getAnimState(agent.state)
   const charBase = getCharBase(agent.role)
   const theme = useTheme() // Why: re-render on theme toggle so sprite path updates
-  const standingSrc = getSpritePath(agent.id, agent.role, charBase, directionRef.current)
-  // Pose duduk: sprite khusus (scripts/gen-seated-sprites.py); jika berkasnya tidak ada, pakai sprite berdiri
-  const [seatedMissing, setSeatedMissing] = useState(false)
-  const spriteSrc = seated && !seatedMissing ? standingSrc.replace(/\.png$/, '-seated.png') : standingSrc
+  const spriteSrc = getSpritePath(agent.id, agent.role, charBase, directionRef.current)
   void theme
 
   const effectSrc = isTyping
@@ -157,7 +152,7 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
       )}
 
       <div
-        className={`char-body-group${onClick ? ' clickable' : ''}${seated ? ' seated' : ''}`}
+        className={`char-body-group${onClick ? ' clickable' : ''}`}
         onClick={onClick ? () => onClick(agent) : undefined}
         title={onClick ? `Klik untuk mengobrol dengan ${agent.name}` : undefined}
       >
@@ -173,7 +168,6 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
             animationDelay: `${(agent.id.charCodeAt(0) * 0.37) % 3}s`,
           }}
           draggable={false}
-          onError={() => { if (seated) setSeatedMissing(true) }}
         />
         {showName && (
           <div className={`char-nameplate${isTyping ? ' busy' : ''}`} style={{ borderColor: agent.color }}>

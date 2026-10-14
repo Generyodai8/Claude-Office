@@ -1,72 +1,33 @@
 // DIBUAT OTOMATIS oleh scripts/gen-boss-sprites.py — jangan diedit tangan.
-// Posisi (x, y) dan ukuran (w, h) dalam persen panggung. Kursi relatif terhadap titik duduk (0,0).
+// Posisi (x, y) dan ukuran (w, h) dalam persen panggung (lampu lantai: relatif terhadap (u,v)=(0,0)).
 export interface BossSprite { src: string; x: number; y: number; w: number; h: number }
-export const BOSS_TABLE: BossSprite = {"src": "/sprites/boss/boss-table.png", "x": 34.987, "y": 54.966, "w": 32.2, "h": 29.464}
-export const BOSS_CHAIRS: Record<string, Record<string, BossSprite>> = {
-  "chairVMinus": {
-    "rear": {
-      "src": "/sprites/boss/chair-chairVMinus-rear.png",
-      "x": 33.851,
-      "y": 19.604,
-      "w": 18.8,
-      "h": 23.036
-    },
-    "seat": {
-      "src": "/sprites/boss/chair-chairVMinus-seat.png",
-      "x": 33.851,
-      "y": 19.604,
-      "w": 18.8,
-      "h": 23.036
-    }
+export const BOSS_FURNITURE: Record<string, BossSprite> = {
+  "sofa": {
+    "src": "/sprites/boss/sofa.png",
+    "x": 7.463,
+    "y": 40.37,
+    "w": 26.0,
+    "h": 27.589
   },
-  "chairUMinus": {
-    "rear": {
-      "src": "/sprites/boss/chair-chairUMinus-rear.png",
-      "x": 33.851,
-      "y": 19.604,
-      "w": 18.8,
-      "h": 23.036
-    },
-    "seat": {
-      "src": "/sprites/boss/chair-chairUMinus-seat.png",
-      "x": 33.851,
-      "y": 19.604,
-      "w": 18.8,
-      "h": 23.036
-    }
+  "coffeeTable": {
+    "src": "/sprites/boss/coffee-table.png",
+    "x": 21.101,
+    "y": 50.575,
+    "w": 16.0,
+    "h": 18.75
   },
-  "chairVPlus": {
-    "all": {
-      "src": "/sprites/boss/chair-chairVPlus-all.png",
-      "x": 33.851,
-      "y": 23.204,
-      "w": 18.8,
-      "h": 19.286
-    }
+  "bookcase": {
+    "src": "/sprites/boss/bookcase.png",
+    "x": 22.525,
+    "y": 29.23,
+    "w": 11.8,
+    "h": 24.643
   },
-  "chairUPlus": {
-    "all": {
-      "src": "/sprites/boss/chair-chairUPlus-all.png",
-      "x": 33.851,
-      "y": 23.204,
-      "w": 18.8,
-      "h": 19.286
-    }
-  },
-  "deskChair": {
-    "rear": {
-      "src": "/sprites/boss/chair-deskChair-rear.png",
-      "x": 33.298,
-      "y": 16.66,
-      "w": 20.0,
-      "h": 26.25
-    },
-    "seat": {
-      "src": "/sprites/boss/chair-deskChair-seat.png",
-      "x": 33.298,
-      "y": 16.66,
-      "w": 20.0,
-      "h": 26.25
-    }
+  "floorLamp": {
+    "src": "/sprites/boss/floor-lamp.png",
+    "x": 37.337,
+    "y": 15.278,
+    "w": 12.0,
+    "h": 25.714
   }
 }

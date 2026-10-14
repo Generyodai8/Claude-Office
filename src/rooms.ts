@@ -102,12 +102,12 @@ export const BOSS_ROOM_SPOTS: AgentSpot[] = [
   spot('boss-desk',  'desk',         0.14, 0.26, 'front-right', 30),
   spot('visitor-1',  'standing',     0.42, 0.20, 'rear-right'),
   spot('visitor-2',  'standing',     0.42, 0.34, 'rear-right'),
-  // 5 kursi pada gambar meja rapat (BOSS_MEETING_SET): ujung kiri, dua di sisi jauh, dua di sisi dekat
-  spot('meet-boss',  'meeting-seat', 0.97, 0.564, 'rear-left',   40),
-  spot('meet-1',     'meeting-seat', 0.805, 0.505, 'front-left',  30),
-  spot('meet-2',     'meeting-seat', 0.626, 0.505, 'front-left',  30),
-  spot('meet-3',     'meeting-seat', 0.973, 0.901, 'rear-right', 40),
-  spot('meet-4',     'meeting-seat', 0.725, 0.883, 'rear-right', 40),
+  // Rapat berdiri di atas karpet: Bos di depan menghadap tim, empat agen berjajar menghadap Bos
+  spot('meet-boss',  'standing',     0.46, 0.60, 'front-right'),
+  spot('meet-1',     'standing',     0.80, 0.47, 'rear-left'),
+  spot('meet-2',     'standing',     0.80, 0.58, 'rear-left'),
+  spot('meet-3',     'standing',     0.80, 0.69, 'rear-left'),
+  spot('meet-4',     'standing',     0.80, 0.80, 'rear-left'),
 ]
 
 function wp(id: string, u: number, v: number, connections: string[]): Waypoint {
@@ -121,17 +121,13 @@ const BOSS_WAYPOINTS: Waypoint[] = [
   wp('B-desk', 0.14, 0.26, ['B-in']),
   wp('B-v1', 0.42, 0.27, ['B-in', 'B-visit']),
   wp('B-visit', 0.42, 0.20, ['B-v1']),
-  wp('B-a', 0.40, 0.44, ['B-in', 'B-f1']),
-  wp('B-f1', 0.626, 0.42, ['B-a', 'B-f2', 'B-m2']),
-  wp('B-m2', 0.626, 0.505, ['B-f1']),
-  wp('B-f2', 0.805, 0.42, ['B-f1', 'B-f3', 'B-m1']),
-  wp('B-m1', 0.805, 0.505, ['B-f2']),
-  wp('B-f3', 0.96, 0.46, ['B-f2', 'B-mA', 'B-n1']),
-  wp('B-mA', 0.97, 0.564, ['B-f3']),
-  wp('B-n1', 0.985, 0.76, ['B-f3', 'B-m3', 'B-n2']),
-  wp('B-m3', 0.973, 0.901, ['B-n1']),
-  wp('B-n2', 0.78, 0.80, ['B-n1', 'B-m4']),
-  wp('B-m4', 0.725, 0.883, ['B-n2']),
+  wp('B-a', 0.40, 0.46, ['B-in', 'B-hub']),
+  wp('B-hub', 0.66, 0.57, ['B-a', 'B-mb', 'B-m1', 'B-m2', 'B-m3', 'B-m4']),
+  wp('B-mb', 0.46, 0.60, ['B-hub']),
+  wp('B-m1', 0.80, 0.47, ['B-hub']),
+  wp('B-m2', 0.80, 0.58, ['B-hub']),
+  wp('B-m3', 0.80, 0.69, ['B-hub']),
+  wp('B-m4', 0.80, 0.80, ['B-hub']),
 ]
 
 // ===== ROOM DEFINITIONS =====
