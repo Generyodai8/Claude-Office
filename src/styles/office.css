@@ -1322,16 +1322,16 @@
   transition: clip-path 0.5s ease-out;
 }
 .char-body-group.seated {
-  transform: translateY(25%);
-  animation: sitDown 0.6s cubic-bezier(0.3, 0.7, 0.3, 1);
+  transform: translateY(-3px);
+  animation: sitDown 0.5s cubic-bezier(0.3, 0.7, 0.3, 1);
 }
-.char-body-group.seated .char-sprite { clip-path: inset(0 0 44% 0); }
+.char-body-group.seated .char-sprite { clip-path: none; }
 .char-body-group.seated .char-shadow { opacity: 0; }
 .char-shadow { transition: opacity 0.3s; }
 .char-body-group.seated .char-nameplate { top: -2px; left: 50%; transform: translate(-50%, -100%); margin: 0; }
 /* badan merunduk sedikit, lalu bersandar pas di kursi */
 @keyframes sitDown {
-  0%   { transform: translateY(0); }
-  50%  { transform: translateY(30%); }
-  100% { transform: translateY(25%); }
+  0%   { transform: translateY(-9px); }
+  55%  { transform: translateY(3px); }
+  100% { transform: translateY(-3px); }
 }

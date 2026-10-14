@@ -210,11 +210,11 @@ def chair_parts(back, style, name_prefix, parts, tall_override=None):
             if back in ('u-', 'u+'):
                 for sgn in (-1, 1):
                     vv = cvv + sgn * (sv + 0.004)
-                    box(cv, cu - su * 0.8, cu + su * 0.8, vv - 0.007, vv + 0.007, zS + 0.5, zS + 1.9, dark_c, shade(dark_c, 1.25), dark_c, hi=False)
+                    box(cv, cu - su * 0.8, cu + su * 0.8, vv - 0.007, vv + 0.007, zS + 0.3, zS + 1.0, dark_c, shade(dark_c, 1.25), dark_c, hi=False)
             else:
                 for sgn in (-1, 1):
                     uu = cu + sgn * (su + 0.004)
-                    box(cv, uu - 0.007, uu + 0.007, cvv - sv * 0.8, cvv + sv * 0.8, zS + 0.5, zS + 1.9, dark_c, shade(dark_c, 1.25), dark_c, hi=False)
+                    box(cv, uu - 0.007, uu + 0.007, cvv - sv * 0.8, cvv + sv * 0.8, zS + 0.3, zS + 1.0, dark_c, shade(dark_c, 1.25), dark_c, hi=False)
 
         def backrest():
             if back == 'u-':
@@ -262,8 +262,8 @@ def main():
     specs = [
         ('chairVMinus', 'v-', 'grey', ['rear', 'seat']),     # kepala meja (meet-boss)
         ('chairUMinus', 'u-', 'grey', ['rear', 'seat']),     # meet-1
-        ('chairVPlus',  'v+', 'grey', ['all'], 6.2),         # sisi dekat: sandaran dipendekkan agar agen terlihat
-        ('chairUPlus',  'u+', 'grey', ['all'], 6.2),         # ujung meja
+        ('chairVPlus',  'v+', 'grey', ['all'], 4.6),         # sisi dekat: sandaran dipendekkan agar agen terlihat
+        ('chairUPlus',  'u+', 'grey', ['all'], 4.6),         # ujung meja
         ('deskChair',   'u-', 'leather', ['rear', 'seat']),  # kursi kulit Bos
     ]
     for spec in specs:

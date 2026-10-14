@@ -39,18 +39,18 @@ export const BOSS_CHAIRS: Record<string, Record<string, BossSprite>> = {
     "all": {
       "src": "/sprites/boss/chair-chairVPlus-all.png",
       "x": 33.851,
-      "y": 21.604,
+      "y": 23.204,
       "w": 18.8,
-      "h": 20.893
+      "h": 19.286
     }
   },
   "chairUPlus": {
     "all": {
       "src": "/sprites/boss/chair-chairUPlus-all.png",
       "x": 33.851,
-      "y": 21.604,
+      "y": 23.204,
       "w": 18.8,
-      "h": 20.893
+      "h": 19.286
     }
   },
   "deskChair": {

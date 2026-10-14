@@ -130,7 +130,10 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
   const animState = getAnimState(agent.state)
   const charBase = getCharBase(agent.role)
   const theme = useTheme() // Why: re-render on theme toggle so sprite path updates
-  const spriteSrc = getSpritePath(agent.id, agent.role, charBase, directionRef.current)
+  const standingSrc = getSpritePath(agent.id, agent.role, charBase, directionRef.current)
+  // Pose duduk: sprite khusus (scripts/gen-seated-sprites.py); jika berkasnya tidak ada, pakai sprite berdiri
+  const [seatedMissing, setSeatedMissing] = useState(false)
+  const spriteSrc = seated && !seatedMissing ? standingSrc.replace(/\.png$/, '-seated.png') : standingSrc
   void theme
 
   const effectSrc = isTyping
@@ -170,6 +173,7 @@ const Character: React.FC<CharacterProps> = ({ agent, idleDurationMs = 0, zIndex
             animationDelay: `${(agent.id.charCodeAt(0) * 0.37) % 3}s`,
           }}
           draggable={false}
+          onError={() => { if (seated) setSeatedMissing(true) }}
         />
         {showName && (
           <div className={`char-nameplate${isTyping ? ' busy' : ''}`} style={{ borderColor: agent.color }}>
