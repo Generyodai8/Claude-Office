@@ -50,5 +50,12 @@ export const BOSS_FURNITURE: Record<string, BossSprite> = {
     "y": 53.997,
     "w": 11.0,
     "h": 21.964
+  },
+  "flowerVase": {
+    "src": "/sprites/boss/flower-vase.png",
+    "x": 37.602,
+    "y": 14.635,
+    "w": 13.2,
+    "h": 30.804
   }
 }

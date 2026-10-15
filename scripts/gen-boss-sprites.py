@@ -401,6 +401,67 @@ def make_globe_table():
     return cv.save('globe-table.png')
 
 
+# ---------------------------------------------------- vas bunga di sudut
+def make_vase():
+    import math
+    rnd = random.Random(7)
+    cu, cvv = 0.075, 0.075
+    cv = Canvas(cu - 0.05, cu + 0.05, cvv - 0.05, cvv + 0.05, 20.0, pad=2.0)
+    c = cv.px(cu, cvv, 0)
+    d = cv.d
+    X, Y = int(c[0]), int(c[1])
+    d.ellipse([X - 13, Y - 4, X + 13, Y + 4], fill=(0, 0, 0, 80))
+    # pedestal kayu bulat
+    d.ellipse([X - 11, Y - 5, X + 11, Y + 2], fill=hexc('#4d2f18'), outline=OUTLINE)
+    d.rectangle([X - 10, Y - 11, X + 10, Y - 3], fill=hexc('#66401f'), outline=OUTLINE)
+    d.line([(X - 9, Y - 7), (X + 9, Y - 7)], fill=hexc('#8a5634'))
+    d.ellipse([X - 11, Y - 14, X + 11, Y - 7], fill=hexc('#8a5634'), outline=OUTLINE)
+    base = Y - 11
+    H = 30
+    def wid(h):  # profil vas: perut bulat, leher ramping, bibir melebar
+        t = h / H
+        if t < 0.08: return 6 + t * 30
+        return 4 + 8.5 * math.sin(min(1, t * 1.25) * math.pi * 0.95) ** 0.8 * (1 - t * 0.45) + (2.5 if t > 0.94 else 0)
+    blue = hexc('#3d6fb5'); blueD = hexc('#2b4f85')
+    for h in range(H):
+        w = int(round(wid(h)))
+        y = base - h
+        d.line([(X - w, y), (X + w, y)], fill=hexc('#eef3f9'))
+        d.line([(X + w // 3, y), (X + w, y)], fill=hexc('#c1cfe0'))
+        d.point((X - w, y), fill=blueD); d.point((X + w, y), fill=blueD)
+        if h in (4, 5, 22, 23):
+            d.line([(X - w + 1, y), (X + w - 1, y)], fill=blue)
+        if 9 <= h <= 17:      # motif daun/bunga biru di perut
+            if (h + (X)) % 4 == 0:
+                for dx in (-5, -1, 3):
+                    d.point((X + dx, y), fill=blue); d.point((X + dx + 1, y - 1), fill=blue)
+    for h in range(H - 1, H + 1):
+        pass
+    d.line([(X - 6, base - H), (X + 6, base - H)], fill=blueD)
+    d.ellipse([X - 6, base - H - 2, X + 6, base - H + 1], fill=hexc('#2a1d12'), outline=blueD)
+    for h in (10, 11, 12):
+        d.point((X - 6, base - h), fill=hexc('#ffffff'))
+    mouth = (X, base - H)
+    # tangkai hijau keluar dari mulut vas, kemudian bunga tepat di ujungnya
+    tips = [(-14, -20, '#e8566b'), (-9, -30, '#f2b84a'), (-3, -38, '#ffffff'), (4, -34, '#e8566b'),
+            (10, -27, '#c77dd9'), (15, -18, '#f2b84a'), (-6, -24, '#c77dd9'), (1, -28, '#f2b84a'), (8, -20, '#ffffff'), (-12, -10, '#ffffff'), (13, -9, '#e8566b')]
+    green = hexc('#2f8f4e'); greenL = hexc('#4fbf74')
+    for dx, dy, col in tips:
+        d.line([mouth, (mouth[0] + dx, mouth[1] + dy)], fill=green)
+    # daun
+    for dx, dy in [(-7, -9), (6, -11), (-10, -17), (11, -15), (-2, -15), (3, -23), (-5, -29)]:
+        ex, ey = mouth[0] + dx, mouth[1] + dy
+        d.ellipse([ex - 2, ey - 1, ex + 2, ey + 1], fill=greenL if dx > 0 else green)
+    for dx, dy, col in tips:
+        ex, ey = mouth[0] + dx, mouth[1] + dy
+        pc = hexc(col)
+        for ox, oy in [(-2, 0), (2, 0), (0, -2), (0, 2), (-1, -1), (1, 1), (-1, 1), (1, -1)]:
+            d.point((ex + ox, ey + oy), fill=pc)
+        d.rectangle([ex - 1, ey - 1, ex, ey], fill=hexc('#7a4a14'))
+        cv.dot((ex - 2, ey - 2), shade(pc, 0.8))
+    return cv.save('flower-vase.png')
+
+
 def main():
     manifest = {
         'sofa': make_sofa(),
@@ -410,6 +471,7 @@ def main():
         'desk': make_desk(),
         'coffeeStation': make_coffee_station(),
         'globeTable': make_globe_table(),
+        'flowerVase': make_vase(),
     }
     ts = [
         '// DIBUAT OTOMATIS oleh scripts/gen-boss-sprites.py — jangan diedit tangan.',

@@ -170,6 +170,7 @@ export const BossRoomBack: React.FC = () => {
       {/* ===== pojok kopi (lemari marmer + mesin espresso) dan meja globe ===== */}
       <SpriteImg s={BOSS_FURNITURE.coffeeStation} />
       <SpriteImg s={BOSS_FURNITURE.globeTable} />
+      <SpriteImg s={BOSS_FURNITURE.flowerVase} />
 
       {/* ===== sudut santai di dinding jendela: rak buku, sofa, meja kopi, lampu lantai ===== */}
       <SpriteImg s={BOSS_FURNITURE.bookcase} />
