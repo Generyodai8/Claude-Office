@@ -29,5 +29,26 @@ export const BOSS_FURNITURE: Record<string, BossSprite> = {
     "y": 15.278,
     "w": 12.0,
     "h": 25.714
+  },
+  "desk": {
+    "src": "/sprites/boss/boss-desk.png",
+    "x": 33.589,
+    "y": 25.238,
+    "w": 27.2,
+    "h": 34.286
+  },
+  "coffeeStation": {
+    "src": "/sprites/boss/coffee-station.png",
+    "x": 63.258,
+    "y": 36.475,
+    "w": 32.8,
+    "h": 35.893
+  },
+  "globeTable": {
+    "src": "/sprites/boss/globe-table.png",
+    "x": 74.73,
+    "y": 53.997,
+    "w": 11.0,
+    "h": 21.964
   }
 }
