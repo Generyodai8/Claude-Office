@@ -51,7 +51,7 @@ export interface OfficeEvent {
   agent?: Partial<Agent>
   agentId?: string
   role?: string
-  action?: 'summon' | 'dismiss'
+  action?: 'summon' | 'dismiss' | 'boss-go' | 'boss-back'
   agentIds?: string[]
   includeBoss?: boolean
   mode?: 'meeting' | 'call'

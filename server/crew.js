@@ -362,7 +362,8 @@ export function createCrew({ broadcast, addMessage, getMessages, activeAgents, v
   function handleOfficeCommand(text) {
     const cmd = parseOfficeCommand(text)
     if (!cmd) return false
-    if (cmd.type === 'meeting') summonMeeting(cmd.topic)
+    if (cmd.type === 'boss-go' || cmd.type === 'boss-back') broadcast({ type: 'office_command', action: cmd.type, agentIds: [], timestamp: Date.now() })
+    else if (cmd.type === 'meeting') summonMeeting(cmd.topic)
     else if (cmd.type === 'call') summonCall(cmd.targets)
     else if (cmd.type === 'dismiss') {
       if (!dismiss(cmd.targets)) systemSay('Tidak ada yang sedang berada di ruangan Bos.')

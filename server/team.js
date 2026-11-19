@@ -364,6 +364,13 @@ export function parseOfficeCommand(text) {
   if (/^\/(bubar|selesai)\b/.test(lower)) return { type: 'dismiss', targets: [] }
   if (lower.startsWith('/')) return null
 
+  // Bos sendiri berpindah ruangan ("saya ke ruangan saya", "aku kembali ke kantor")
+  const selfRe = /\b(saya|aku|gue|gw|bos)\b/.test(lower) && !all && !names.length && !/\b(buat|tulis|bikin|carikan|susun|cari)\b/.test(lower)
+  if (selfRe) {
+    if (/\b(kembali|balik|pindah|keluar|pergi)\b.*\b(ke )?(kantor|ruang(an)?) (utama|depan|awal)\b|\b(kembali|balik) ke (kantor|meja)\b/.test(lower)) return { type: 'boss-back' }
+    if (/\b(ke|pindah|masuk|menuju)\b.*\bruang(an)?( bos| saya| kerja| ku)?\b/.test(lower) && !/\b(utama|depan|awal)\b/.test(lower)) return { type: 'boss-go' }
+  }
+
   // bubar / kembali ke meja
   const dismissRe = /\b(bubar|bubarkan|rapat (sudah )?(selesai|usai)|meeting (sudah )?(selesai|usai)|selesai rapat|rapat ditutup|silakan kembali|silahkan kembali|boleh kembali|kembali ke (meja|kantor|tempat)|kembalilah ke|pindah ke (kantor|ruang(an)?) (utama|depan|awal)|balik ke (meja|kantor))\b/
   if (dismissRe.test(lower)) {

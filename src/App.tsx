@@ -690,6 +690,17 @@ const App: React.FC = () => {
   // WebSocket event handler
   // ---------------------------------------------------------------------------
 
+  /** Karakter Bos berjalan sendiri ke ruangan lain (lewat pintu), lalu tab ruangan ikut berpindah. */
+  const moveBossTo = useCallback((toRoom: RoomId) => {
+    setAgents(prev => prev.map(a => {
+      if (a.id !== BOSS_ID) return a
+      if (a.room === toRoom && !a.transit) return a
+      const spotId = toRoom === 'boss-room' ? 'boss-desk' : (a.assignedSpotId ?? 'spot-1')
+      return beginTransit({ ...a, transit: undefined }, toRoom, spotId, 'working')
+    }))
+    setViewRoom(toRoom)
+  }, [])
+
   const handleEvent = useCallback((event: OfficeEvent) => {
     const effects: PendingEffect[] = []
 
@@ -697,6 +708,8 @@ const App: React.FC = () => {
     if (event.type === 'office_command') {
       const ids = event.agentIds ?? []
       const seats = event.seats ?? {}
+      if (event.action === 'boss-go') { moveBossTo('boss-room'); return }
+      if (event.action === 'boss-back') { moveBossTo('main-office'); return }
       if (event.action === 'summon') {
         const bossSpot = event.mode === 'meeting' ? 'meet-boss' : 'boss-desk'
         setAgents(prev => prev.map(a => {
@@ -2031,6 +2044,9 @@ const App: React.FC = () => {
               {agents.filter(a => a.id !== BOSS_ID && a.room === 'boss-room').length > 0 && (
                 <span className="room-tab-count">{agents.filter(a => a.id !== BOSS_ID && a.room === 'boss-room').length}</span>
               )}
+            </button>
+            <button className="room-tab" onClick={() => moveBossTo(viewRoom === 'boss-room' ? 'main-office' : 'boss-room')} title="Jalankan karakter Bos ke ruangan ini">
+              🚶 Bos {viewRoom === 'boss-room' ? 'ke Kantor' : 'ke Ruang Bos'}
             </button>
           </div>
 
