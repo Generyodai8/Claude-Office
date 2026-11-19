@@ -365,10 +365,20 @@ export function parseOfficeCommand(text) {
   if (lower.startsWith('/')) return null
 
   // bubar / kembali ke meja
-  const dismissRe = /\b(bubar|bubarkan|rapat (sudah )?(selesai|usai)|meeting (sudah )?(selesai|usai)|selesai rapat|rapat ditutup|silakan kembali|silahkan kembali|boleh kembali|kembali ke (meja|kantor|tempat)|kembalilah ke)\b/
+  const dismissRe = /\b(bubar|bubarkan|rapat (sudah )?(selesai|usai)|meeting (sudah )?(selesai|usai)|selesai rapat|rapat ditutup|silakan kembali|silahkan kembali|boleh kembali|kembali ke (meja|kantor|tempat)|kembalilah ke|pindah ke (kantor|ruang(an)?) (utama|depan|awal)|balik ke (meja|kantor))\b/
   if (dismissRe.test(lower)) {
     if (names.length && !/\b(semua|semuanya|kalian|tim)\b/.test(lower)) return { type: 'dismiss', targets: names.slice(0, 3) }
     return { type: 'dismiss', targets: [] }
+  }
+
+  // pindah ruangan ("semua pindah ke ruangan bos", "pindah ruangan", "kalian masuk ke ruang saya")
+  const moveVerb = /\b(pindah|pindahlah|pergi|menuju|masuk|datang|ayo ke|ke)\b/.test(lower)
+  const bossRoomCue = /\b(ruang(an)? ?(bos|saya|kerja saya|kerjaku|ku)|ruang bos|ruangan bos|kantor saya|ruang lain|ruangan lain|ruangan sebelah|ruang sebelah)\b/.test(lower)
+  const plainMove = /\b(pindah|pindahlah) (ke )?ruang(an)?\b/.test(lower) && !/\b(utama|depan|awal|kantor utama|main)\b/.test(lower)
+  const noWork = !/\b(buat|tulis|bikin|carikan|susun|cari)\b/.test(lower)
+  if (noWork && moveVerb && (bossRoomCue || plainMove)) {
+    if (names.length && !all) return { type: 'call', targets: names.slice(0, 2) }
+    return { type: 'meeting', topic: topicFrom(raw) }
   }
 
   // panggil satu per satu ke ruangan Bos
